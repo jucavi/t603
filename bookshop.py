@@ -97,7 +97,7 @@ def user_value_format(user_value, key):
     return user_value
 
 def search(db, key):
-    print(f' "{key.capitalize()}" a buscar '.center(50, '-') + '\n')
+    print(f' "{key.capitalize()}" a buscar '.center(80, '-') + '\n')
     
     user_value = prompt()
     user_value = user_value_format(user_value, key)
@@ -109,24 +109,24 @@ def search(db, key):
         reintentar = prompt().lower()
         
         if reintentar == 'y':
-            search(DB, key)
+            books.append(*search(DB, key))
             
     return books
    
    
 def menu():
-    print(' Gestion de Libros '.center(50, '-'))
+    print(' Gestion de Libros '.center(80, '-'))
     print(
 '''
-        Bienvenid@ a su libreria en casa
+                    Bienvenid@ a su libreria en casa
 
-            Buscar libros por:
+                        Buscar libros por:
     
-                [1]   Id
-                [2]   Título
-                [3]   Autor
-                [4]   Género
-                [Q]   Salir 
+                            [1]   Id
+                            [2]   Título
+                            [3]   Autor
+                            [4]   Género
+                            [Q]   Salir 
 ''')
 
 
@@ -135,14 +135,15 @@ def adios():
 
 
 def alert(n):
-    user = input(f'\t\tEsta a punto de eliminar {n} elemento(s). ¿Está seguro? (Y/n): ')
+    print(f'\t\tEsta a punto de eliminar {n} elemento(s). ¿Está seguro? (Y/n)')
+    user = prompt()
     if user.lower() == 'y':
         return True
     return False
 
 
 def remove(db, book):
-    db.remove(book)
+    db.remove_all([book])
 
     
 def remove_all(db, books):
@@ -151,12 +152,36 @@ def remove_all(db, books):
             db.remove(book)
 
 
-def update(db, book):
+def update(book):
     for key, value in book.items():
-        new_value = input(f'{key}: {value} Si desea modificarlo entre el nuevo valor sino pulse Enter: ')
+        print(f'{key}: {value} Si desea modificarlo entre el nuevo valor sino pulse <intro>')
+        new_value = prompt()
         if new_value:
             book[key] = new_value
+            
+            
+def show_books(books):
+    print('\n\n')
+    print('''{:4}  {:30} {:20} {:20}'''.format('','Titulo', 'Autor', 'Género'))
+    print()
+    for i, book in enumerate(books, 1):
+        print(f'''{i:4}. {book['title']:30} {book['author']:20} {book['genre']:20}''')
+    print()
 
+def create_update_delete_menu(db, books):
+    print('Crear(E) Editar(E) Borrar(B)'.center(80))
+    print('ej. Borrar libro número 2: >> B2'.center(80))
+    user_action = prompt()
+    if len(user_action) > 1:
+        action, book_id, *error = list(user_action)
+        book_id = int(book_id) - 1
+        if book_id in range(len(books)):
+            if action == 'B':
+                remove(db, books[book_id])
+            if action == 'E':
+                update(books[book_id])
+    main()
+    
 def main():
     while True:
         menu()
@@ -171,7 +196,10 @@ def main():
         if user_input in patrones_de_busqueda:
             books = search(DB, patrones_de_busqueda[user_input])
             show_books(books)
-            create_update_delete_menu()
+            # los libroso son mostrados [index + 1] en el menu de show_books
+            create_update_delete_menu(DB, books)
         else:
-            input('Por favor introduzca una opción válida, pulse cualquier tecla para contiuar')
+            print('Por favor introduzca una opción válida, pulse cualquier tecla para contiuar')
+            prompt()
 
+main()
