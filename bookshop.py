@@ -61,9 +61,15 @@ DB = [{
 ]
 
 PROMPT = '>> '
+SCREEN_WIDTH = 120
+FILL_CHAR = '-'
 genres = ["Narrativa extranjera", "Divulgación científica", "Narativa policíaca", "Ciencia ficción", "Autoayuda"]
 patrones_de_busqueda = {f'{i}': f'{k}' for i, k in enumerate(DB[0], 1)}
 
+def print_wrap(text, width=SCREEN_WIDTH, fill=' '):
+    for line in text.split('\n'):
+        print(line.center(width, fill))
+        
 def prompt(str_prpmpt=PROMPT):
     return input(str_prpmpt)
 
@@ -98,7 +104,9 @@ def user_value_format(user_value, key):
     return user_value
 
 def search(db, key):
-    print(f' "{key.capitalize()}" a buscar '.center(80, '-') + '\n')
+    text = f'''
+"{key.capitalize()}" a buscar'''
+    print_wrap(text, SCREEN_WIDTH, FILL_CHAR)
     
     user_value = prompt()
     user_value = user_value_format(user_value, key)
@@ -117,21 +125,14 @@ def search(db, key):
     return books
    
    
-def menu():
-    print(' Gestion de Libros '.center(80, '-'))
-    # TODO Imprimir con patrones_de_busqueda.capitalize()
-    print(
-'''
-                    Bienvenid@ a su libreria en casa
-
-                        Buscar libros por:
-    
-                            [1]   Id
-                            [2]   Título
-                            [3]   Autor
-                            [4]   Género
-                            [Q]   Salir 
-''')
+def menu(patrones_de_busqueda):
+    header = '''Gestion de Libros'''
+    print_wrap(header, SCREEN_WIDTH, FILL_CHAR)
+    sub_header = '\nBienvenid@ a su libreria en casa\n\nBuscar libros por:\n\n'
+    for i, opcion in patrones_de_busqueda.items():
+        sub_header += f'[{i}]\t{opcion.capitalize():20}\n'
+    sub_header += '''[5]   Listar todo\n[q]   Salir\n'''
+    print_wrap(sub_header, SCREEN_WIDTH)
 
 
 def adios():
@@ -158,8 +159,9 @@ def remove(db, book):
 
 
 def update(book):
+    print('Si desea modificar, entre el nuevo valor sino pulse <intro>')
     for key, value in book.items():
-        print(f'{key}: {value} Si desea modificarlo entre el nuevo valor sino pulse <intro>')
+        print(f'{key}: {value}')
         new_value = prompt()
         if new_value:
             book[key] = new_value
@@ -174,9 +176,9 @@ def show_books(books):
     print()
 
 def create_update_delete_menu(db, books):
-    print('Crear(C) Editar(E) Borrar(B)'.center(80))
-    print('ej. Borrar libro número 2: B2'.center(80))
-    print('ej. Editar libro número 1: E1'.center(80))
+    print('Crear(C) Editar(E) Borrar(B)'.center(SCREEN_WIDTH))
+    print('ej. Borrar libro número 2: B2'.center(SCREEN_WIDTH))
+    print('ej. Editar libro número 1: E1'.center(SCREEN_WIDTH))
 
     user_action = prompt()
     if len(user_action) > 1:
@@ -200,18 +202,22 @@ def create_update_delete_menu(db, books):
     
 def main():
     while True:
-        menu()
+        menu(patrones_de_busqueda)
         user_input = prompt()
         
         if user_input.lower() == 'q':
             adios()
             exit()
-        elif user_input in patrones_de_busqueda:
+        
+        if user_input in patrones_de_busqueda:
             books = search(DB, patrones_de_busqueda[user_input])
             show_books(books)
             create_update_delete_menu(DB, books)
+        elif user_input == '5':
+            books = DB
+            show_books(books)
+            prompt()
         else:
             print('Por favor introduzca una opción válida, pulse cualquier tecla para contiuar')
-            prompt()
 
 main()
