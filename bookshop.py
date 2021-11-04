@@ -110,6 +110,8 @@ def search(db, key):
         
         if reintentar == 'y':
             books.append(*search(DB, key))
+    else:
+        main()
             
     return books
    
