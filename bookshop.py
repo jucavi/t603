@@ -95,7 +95,7 @@ def prompt(str_prpmpt=PROMPT):
 
 
 def find_by_user_value(db, key, user_value):
-    return [book for book in db if book.get(key) == user_value]
+    return [book for book in db if (book.get(key) == user_value) or (user_value.lower() in book.get(key).lower()) ]
 
 
 def user_value_format(user_value, key):
