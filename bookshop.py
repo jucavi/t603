@@ -62,6 +62,7 @@ DB = [{
 
 PROMPT = '>> '
 genres = ["Narrativa extranjera", "Divulgación científica", "Narativa policíaca", "Ciencia ficción", "Autoayuda"]
+patrones_de_busqueda = {f'{i}': f'{k}' for i, k in enumerate(DB[0], 1)}
 
 def prompt(str_prpmpt=PROMPT):
     return input(str_prpmpt)
@@ -110,14 +111,15 @@ def search(db, key):
         
         if reintentar == 'y':
             books.append(*search(DB, key))
-    else:
-        main()
+        else:
+            main()
             
     return books
    
    
 def menu():
     print(' Gestion de Libros '.center(80, '-'))
+    # TODO Imprimir con patrones_de_busqueda.capitalize()
     print(
 '''
                     Bienvenid@ a su libreria en casa
@@ -171,17 +173,28 @@ def show_books(books):
     print()
 
 def create_update_delete_menu(db, books):
-    print('Crear(E) Editar(E) Borrar(B)'.center(80))
-    print('ej. Borrar libro número 2: >> B2'.center(80))
+    print('Crear(C) Editar(E) Borrar(B)'.center(80))
+    print('ej. Borrar libro número 2: B2'.center(80))
+    print('ej. Editar libro número 1: E1'.center(80))
+
     user_action = prompt()
     if len(user_action) > 1:
-        action, book_id, *error = list(user_action)
+        action, book_id = user_action[0], user_action[1]
+        
+        # los libroso son mostrados [index + 1] en el menu de show_books
         book_id = int(book_id) - 1
+        action = action.lower()
+        
         if book_id in range(len(books)):
-            if action == 'B':
+            if action == 'b':
                 remove(db, books[book_id])
-            if action == 'E':
+            elif action == 'e':
                 update(books[book_id])
+            else:
+                print('La acción no existe o aun no se ha implementado' )
+    else:
+        print('Formato de comando erroneo')
+            
     main()
     
 def main():
@@ -189,16 +202,12 @@ def main():
         menu()
         user_input = prompt()
         
-        patrones_de_busqueda = {'1': 'id', '2': 'title', '3': 'author', '4': 'genre'}
-        
         if user_input.lower() == 'q':
             adios()
-            break
-        
-        if user_input in patrones_de_busqueda:
+            exit()
+        elif user_input in patrones_de_busqueda:
             books = search(DB, patrones_de_busqueda[user_input])
             show_books(books)
-            # los libroso son mostrados [index + 1] en el menu de show_books
             create_update_delete_menu(DB, books)
         else:
             print('Por favor introduzca una opción válida, pulse cualquier tecla para contiuar')
