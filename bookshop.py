@@ -68,30 +68,35 @@ patrones_de_busqueda = {f'{i}': f'{k}' for i, k in enumerate(DB[0], 1)}
 
 def print_wrap(text, width=SCREEN_WIDTH, fill=' '):
     for line in text.split('\n'):
-        print(line.center(width, fill))
-        
+        if line:
+            print(line.center(width, fill))
+        else:
+            print()
+
+       
 def prompt(str_prpmpt=PROMPT):
     return input(str_prpmpt)
 
 
-def id_shapes_str():
-    id_shapes = []
+# def id_shapes_str():
+#     id_shapes = []
     
-    genres_list = (genre.split(' ') for genre in genres)
+#     genres_list = (genre.split(' ') for genre in genres)
     
-    for words in genres_list:
-        if len(words) == 1:
-            chars = words[0][0].lower() * 2  
-        elif len(words) > 1:
-            chars = ''.join(word[0].lower() for word in words)            
+#     for words in genres_list:
+#         if len(words) == 1:
+#             chars = words[0][0].lower() * 2  
+#         elif len(words) > 1:
+#             chars = ''.join(word[0].lower() for word in words)            
         
-        id_shapes.append(f'{chars}_(n)')
+#         id_shapes.append(f'{chars}_(n)')
         
-    return ' '.join(id_shapes) + '\n'
+#     return ' '.join(id_shapes) + '\n'
 
 
 def find_by_user_value(db, key, user_value):
     return [book for book in db if book.get(key) == user_value]
+
 
 def user_value_format(user_value, key):
     if key == 'author':
@@ -103,10 +108,10 @@ def user_value_format(user_value, key):
         
     return user_value
 
+
 def search(db, key):
-    text = f'''
-"{key.capitalize()}" a buscar'''
-    print_wrap(text, SCREEN_WIDTH, FILL_CHAR)
+    text = f'\n"{key.capitalize()}" a buscar'
+    print_wrap(text, fill=FILL_CHAR)
     
     user_value = prompt()
     user_value = user_value_format(user_value, key)
@@ -126,13 +131,14 @@ def search(db, key):
    
    
 def menu(patrones_de_busqueda):
-    header = '''Gestion de Libros'''
-    print_wrap(header, SCREEN_WIDTH, FILL_CHAR)
-    sub_header = '\nBienvenid@ a su libreria en casa\n\nBuscar libros por:\n\n'
+    header = '''Gestion de Libros\n'''
+    print_wrap(header, fill=FILL_CHAR)
+    sub_header = 'Bienvenid@ a su libreria en casa\nBuscar libros por:\n\n'
     for i, opcion in patrones_de_busqueda.items():
-        sub_header += f'[{i}]\t{opcion.capitalize():20}\n'
-    sub_header += '''[5]   Listar todo\n[q]   Salir\n'''
-    print_wrap(sub_header, SCREEN_WIDTH)
+        sub_header += f'[{i}] {opcion.capitalize():9}\n'
+    sub_header += '  [5] Listar todo\n'
+    sub_header += '[q] Salir    \n'
+    print_wrap(sub_header)
 
 
 def adios():
@@ -159,7 +165,7 @@ def remove(db, book):
 
 
 def update(book):
-    print('Si desea modificar, entre el nuevo valor sino pulse <intro>')
+    print('Si desea modificar entre el <nuevo> valor sino pulse <intro>')
     for key, value in book.items():
         print(f'{key}: {value}')
         new_value = prompt()
@@ -168,17 +174,13 @@ def update(book):
             
             
 def show_books(books):
-    print('\n\n')
-    print('''{:4}  {:30} {:20} {:20}'''.format('','Titulo', 'Autor', 'Género'))
-    print()
+    print_wrap('Listado de Libros', fill=FILL_CHAR)
+    print_wrap('''\n{:4}  {:35} {:25} {:25}\n\n'''.format('','Titulo', 'Autor', 'Género'), )
     for i, book in enumerate(books, 1):
-        print(f'''{i:4}. {book['title']:30} {book['author']:20} {book['genre']:20}''')
-    print()
+        print_wrap(f'''{i:4}. {book['title']:35} {book['author']:25} {book['genre']:25}\n''')
 
 def create_update_delete_menu(db, books):
-    print('Crear(C) Editar(E) Borrar(B)'.center(SCREEN_WIDTH))
-    print('ej. Borrar libro número 2: B2'.center(SCREEN_WIDTH))
-    print('ej. Editar libro número 1: E1'.center(SCREEN_WIDTH))
+    print_wrap('\n\nCrear(C) Editar(E) Borrar(B)')
 
     user_action = prompt()
     if len(user_action) > 1:
@@ -195,7 +197,7 @@ def create_update_delete_menu(db, books):
                 update(books[book_id])
             else:
                 print('La acción no existe o aun no se ha implementado' )
-    else:
+    elif user_action:
         print('Formato de comando erroneo')
             
     main()
@@ -216,7 +218,7 @@ def main():
         elif user_input == '5':
             books = DB
             show_books(books)
-            prompt()
+            create_update_delete_menu(DB, books)
         else:
             print('Por favor introduzca una opción válida, pulse cualquier tecla para contiuar')
 
