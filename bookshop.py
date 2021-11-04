@@ -60,48 +60,118 @@ DB = [{
 },
 ]
 
-genre = ["Narrativa extranjera", "Divulgación científica", "Narativa policíaca", "Ciencia ficción", "Autoayuda"]
+PROMPT = '>> '
+genres = ["Narrativa extranjera", "Divulgación científica", "Narativa policíaca", "Ciencia ficción", "Autoayuda"]
 
-def menu():
-    print('Welcome'.center(30, '-'))
+def prompt(str_prpmpt=PROMPT):
+    return input(str_prpmpt)
+
+
+def id_shapes_str():
+    id_shapes = []
     
+    genres_list = (genre.split(' ') for genre in genres)
+    
+    for words in genres_list:
+        if len(words) == 1:
+            chars = words[0][0].lower() * 2  
+        elif len(words) > 1:
+            chars = ''.join(word[0].lower() for word in words)            
+        
+        id_shapes.append(f'{chars}_(n)')
+        
+    return ' '.join(id_shapes) + '\n'
+
+
+def find_by_user_value(db, key, user_value):
+    return [book for book in db if book.get(key) == user_value]
+
+def user_value_format(user_value, key):
+    if key == 'author':
+        user_value = user_value.title()
+    elif key == 'title' or key == 'genre':
+        user_value = user_value.capitalize()
+    else:
+        user_value = user_value.lower()
+        
+    return user_value
+
+def search(db, key):
+    print(f' "{key.capitalize()}" a buscar '.center(50, '-') + '\n')
+    
+    user_value = prompt()
+    user_value = user_value_format(user_value, key)
+        
+    books = find_by_user_value(db, key, user_value)
+    
+    if not books:
+        print(f'No hay resultados para la busqueda. ¿Desea volver a interntarlo? (Y/n)')
+        reintentar = prompt().lower()
+        
+        if reintentar == 'y':
+            search(DB, key)
+            
+    return books
+   
+   
+def menu():
+    print(' Gestion de Libros '.center(50, '-'))
+    print(
+'''
+        Bienvenid@ a su libreria en casa
+
+            Buscar libros por:
+    
+                [1]   Id
+                [2]   Título
+                [3]   Autor
+                [4]   Género
+                [Q]   Salir 
+''')
+
+
+def adios():
+    print('Gracias por hacer uso de nuestra aplicación.\n')
+
+
 def alert(n):
     user = input(f'\t\tEsta a punto de eliminar {n} elemento(s). ¿Está seguro? (Y/n): ')
     if user.lower() == 'y':
         return True
     return False
+
+
+def remove(db, book):
+    db.remove(book)
+
     
-def find_by(db, key, value):
-    return [book for book in db if book.get(key) == value]
+def remove_all(db, books):
+    if alert(len(books)):
+        for book in books:
+            db.remove(book)
 
-def remove(db, key, value):
-    books_found = find_by(db, key, value)
-    if len(books_found) > 1:
-        return None
-    if alert(len(books_found)):
-        db.pop(books_found[0])
-    
-def remove_all(db, key, value):
-    books_found = find_by(db, key, value)
-    if alert(len(books_found)):
-        for book in books_found:
-            db.pop(book)
-    
-  
-while True:
-    menu()
-    user = input('')
-    
-# Librería
 
-# Gestiona una librería virtual
+def update(db, book):
+    for key, value in book.items():
+        new_value = input(f'{key}: {value} Si desea modificarlo entre el nuevo valor sino pulse Enter: ')
+        if new_value:
+            book[key] = new_value
 
-# Podrá buscar libros por los siguientes parámetros:
-
-#     id
-#     Autor
-#     Título
-#     Genero
-
-# Ademas, se podrá modificar los datos de cada uno de los libros así como eliminarlos
+def main():
+    while True:
+        menu()
+        user_input = prompt()
+        
+        patrones_de_busqueda = {'1': 'id', '2': 'title', '3': 'author', '4': 'genre'}
+        
+        if user_input.lower() == 'q':
+            adios()
+            break
+        
+        if user_input in patrones_de_busqueda:
+            books = search(DB, patrones_de_busqueda[user_input])
+            show_books(books)
+            create_update_delete_menu()
+        else:
+            input('Por favor introduzca una opción válida, pulse cualquier tecla para contiuar')
 
