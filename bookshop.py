@@ -139,7 +139,7 @@ def adios():
 
 
 def alert(n):
-    print(f'\t\tEsta a punto de eliminar {n} elemento(s). ¿Está seguro? (Y/n)')
+    print(f'Esta a punto de eliminar {n} elemento(s). ¿Está seguro? (Y/n)')
     user = prompt()
     if user.lower() == 'y':
         return True
@@ -147,13 +147,14 @@ def alert(n):
 
 
 def remove(db, book):
-    db.remove_all([book])
-
+    if alert(1):
+        db.remove(book)
+        print('Libro Eliminado.')
     
-def remove_all(db, books):
-    if alert(len(books)):
-        for book in books:
-            db.remove(book)
+# def remove_all(db, books):
+#     if alert(len(books)):
+#         for book in books:
+#             remove(db, book)
 
 
 def update(book):
