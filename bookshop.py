@@ -137,10 +137,10 @@ def search(db, key):
     
     if not books:
         print_wrap(f'No hay resultados para la busqueda. ¿Desea volver a interntarlo? (Y/n)')
-        reintentar = prompt().lower()
+        reintentar = prompt(str_prompt=PROMPT.rjust(SCREEN_WIDTH // 3)).lower()
         
         if reintentar == 'y':
-            search(DB, key)
+            books.extend(search(DB, key))
         else:
             main(db)
             
