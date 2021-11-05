@@ -227,7 +227,8 @@ def show_books(books):
         print_wrap(f'({pag})', fill=FILL_CHAR)
         prompt(str_prompt=': ')
     
-    
+# TODO create_by() genre or author
+
 def create(db):
     print_wrap('Nuevo Libro\n\n', fill=FILL_CHAR)
     while True:
