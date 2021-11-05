@@ -1,3 +1,5 @@
+import pickle
+
 DB = [{
     "id": "cf_1",
     "title": "El hombre bicentenario",
@@ -60,6 +62,7 @@ DB = [{
 },
 ]
 
+DB_FILE = 'book_store_database.pckl'
 PROMPT = '>> '
 SCREEN_WIDTH = 120
 FILL_CHAR = '-'
@@ -140,7 +143,7 @@ def search(db, key):
         prompt_message = PROMPT.rjust(SCREEN_WIDTH // 3)
 
         if alert(message, prompt_message):
-            books.extend(search(DB, key))
+            books.extend(search(db, key))
         else:
             main(db)
             
@@ -280,12 +283,18 @@ def create_update_delete_menu(db, books):
     main(db)
 
 
-def main(db):
+def main(db): 
     while True:
         menu(patrones_de_busqueda)
         user_input = prompt().lower()
         
         if user_input == 'q':
+            with open(DB_FILE, 'wb') as db_file:
+                try:
+                    pickle.dump(db, db_file)
+                    print(f'Guardando en {DB_FILE}...')
+                except:
+                    print('No se guarda en la database')
             adios()
             exit()
         
@@ -301,6 +310,12 @@ def main(db):
             create(db)
         else:
             print('Por favor introduzca una opción válida, pulse cualquier tecla para contiuar')
-
-
-main(DB)
+            
+try:
+    with open(DB_FILE, 'rb') as db_file:    
+        db = pickle.load(db_file)
+except Exception:
+    main(DB)
+else:
+    main(db)
+    
