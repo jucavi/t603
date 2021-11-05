@@ -136,10 +136,10 @@ def search(db, key):
     books = find_by_user_value(db, key, user_value)
     
     if not books:
-        print_wrap(f'No hay resultados para la busqueda. ¿Desea volver a interntarlo? (Y/n)')
-        reintentar = prompt(str_prompt=PROMPT.rjust(SCREEN_WIDTH // 3)).lower()
-        
-        if reintentar == 'y':
+        message = f'No hay resultados para la busqueda. ¿Desea volver a interntarlo? (Y/n)'
+        prompt_message = PROMPT.rjust(SCREEN_WIDTH // 3)
+
+        if alert(message, prompt_message):
             books.extend(search(DB, key))
         else:
             main(db)
@@ -163,16 +163,20 @@ def adios():
     print('Gracias por hacer uso de nuestra aplicación.\n')
 
 
-def alert(action='eliminar', n=1, message=''):
-    print_wrap(f'Esta a punto de {action} {n} elemento(s). ¿Está seguro? (Y/n)')
-    user = prompt(str_prompt=message)
+def alert(message='Alerta!', prompt_message=PROMPT):
+    print_wrap(message)
+    user = prompt(prompt_message)
+    
     if user.lower() == 'y':
         return True
     return False
 
 
 def remove(db, book):
-    if alert(message=PROMPT.rjust(SCREEN_WIDTH // 3)):
+    message = f'''Esta a punto de eliminar "{book["title"].upper()}". ¿Está seguro? (Y/n)'''
+    prompt_message = PROMPT.rjust(SCREEN_WIDTH // 3)
+    
+    if alert(message, prompt_message):
         db.remove(book)
         print_wrap('Libro Eliminado\n\n', fill='*')
 
@@ -219,11 +223,9 @@ def show_books(books):
         print_wrap(f'({pag})', fill=FILL_CHAR)
         prompt(str_prompt=': ')
     
-# TODO refactor alert to manage create, search, remove, update, messages     
     
 def create(db):
     print_wrap('Nuevo Libro\n\n', fill=FILL_CHAR)
-    # TODO implement loop for create books
     while True:
         new_book = {}
         for key in BOOK_KEYS[1:]:
@@ -234,10 +236,11 @@ def create(db):
         new_book['id'] = id_generator(db, new_book['genre'])
         db.append(new_book)
         print_wrap('\nNuevo libro agregado a la biblioteca\n', fill=FILL_CHAR)
-        print_wrap(f'¿Desea crear otro libro? (Y/n)')
-        reintentar = prompt(str_prompt=PROMPT.rjust(SCREEN_WIDTH // 3)).lower()
         
-        if reintentar == 'y':
+        message = f'¿Desea crear otro libro? (Y/n)'
+        prompt_message = PROMPT.rjust(SCREEN_WIDTH // 3)
+        
+        if alert(message, prompt_message):
             create(db)  
         else:
             main(db)
