@@ -63,6 +63,7 @@ DB = [{
 PROMPT = '>> '
 SCREEN_WIDTH = 120
 FILL_CHAR = '-'
+LINES_PER_PAGE = 5
 BOOK_KEYS = ['id', 'title', 'author', 'genre']
 genres = ["Narrativa extranjera", "Divulgación científica", "Narativa policíaca", "Ciencia ficción", "Autoayuda"]
 patrones_de_busqueda = {f'{i}': f'{k}' for i, k in enumerate(BOOK_KEYS, 1)}
@@ -75,8 +76,8 @@ def print_wrap(text, width=SCREEN_WIDTH, fill=' '):
             print()
 
        
-def prompt(str_prpmpt=PROMPT):
-    return input(str_prpmpt)
+def prompt(str_prompt=PROMPT):
+    return input(str_prompt)
 
 
 def id_generator(db, genre):
@@ -93,11 +94,18 @@ def id_generator(db, genre):
     
     books_by_genre = find_by_user_value(db, 'id', id_partial)
     try:
-        max_id = max(int(book['id'][-1]) for book in books_by_genre)
+        max_id = max(int(book['id'][3:]) for book in books_by_genre)
     except :
         max_id = 0
      
     return id_partial + str(max_id + 1)
+
+
+def is_valid_id(db, book, id_candidate):
+    unique = filter(lambda b: (b != book) and (b['id'] != id_candidate), db)
+    true_format = id_candidate[:3] == id_generator(db, book['genre'])[:3]
+    
+    return unique and true_format
 
 
 def find_by_user_value(db, key, user_value):
@@ -105,6 +113,7 @@ def find_by_user_value(db, key, user_value):
         return [book for book in db if (book.get(key) == user_value) or (user_value.lower() in book.get(key).lower()) ]
     except:
         return []
+
 
 def user_value_format(user_value, key):
     if key == 'author':
@@ -127,11 +136,11 @@ def search(db, key):
     books = find_by_user_value(db, key, user_value)
     
     if not books:
-        print(f'No hay resultados para la busqueda. ¿Desea volver a interntarlo? (Y/n)')
+        print_wrap(f'No hay resultados para la busqueda. ¿Desea volver a interntarlo? (Y/n)')
         reintentar = prompt().lower()
         
         if reintentar == 'y':
-            books.append(*search(DB, key))
+            search(DB, key)
         else:
             main(db)
             
@@ -144,8 +153,8 @@ def menu(patrones_de_busqueda):
     sub_header = 'Bienvenid@ a su libreria en casa\nBuscar libros por:\n\n'
     for i, opcion in patrones_de_busqueda.items():
         sub_header += f'[{i}] {opcion.capitalize():9}\n'
-    sub_header += '  [5] Listar todo\n'
-    sub_header += '  [6] Crear libro\n'
+    sub_header += '  [L] Listar todo\n'
+    sub_header += '  [C] Crear libro\n'
     sub_header += '[q] Salir    \n'
     print_wrap(sub_header)
 
@@ -154,59 +163,85 @@ def adios():
     print('Gracias por hacer uso de nuestra aplicación.\n')
 
 
-def alert(n):
-    print(f'Esta a punto de eliminar {n} elemento(s). ¿Está seguro? (Y/n)')
-    user = prompt()
+def alert(action='eliminar', n=1, message=''):
+    print_wrap(f'Esta a punto de {action} {n} elemento(s). ¿Está seguro? (Y/n)')
+    user = prompt(str_prompt=message)
     if user.lower() == 'y':
         return True
     return False
 
 
 def remove(db, book):
-    if alert(1):
+    if alert(message=PROMPT.rjust(SCREEN_WIDTH // 3)):
         db.remove(book)
-        print('Libro Eliminado.')
-    
-# def remove_all(db, books):
-#     if alert(len(books)):
-#         for book in books:
-#             remove(db, book)
+        print_wrap('Libro Eliminado\n\n', fill='*')
 
 
-def update(book):
-    print('Si desea modificar entre el <nuevo> valor sino pulse <intro>')
+def update(db, book):
+    print_wrap('Si desea modificar entre el <NUEVO> valor sino pulse <INTRO>\n', fill=FILL_CHAR)
     for key, value in book.items():
-        print(f'{key}: {value}')
-        new_value = prompt()
-        if new_value:
-            book[key] = new_value
-            
+        if key != 'id':
+            new_value = prompt(str_prompt=f'{key}: {value} >> '.rjust(SCREEN_WIDTH // 3))
+           
+            if new_value:
+                if alert(action='modificar', message=PROMPT.rjust(SCREEN_WIDTH // 3)):
+                    book[key] = user_value_format(new_value, key)
+                
+    genre = book['genre']
+    if genre and (genre not in genres):
+        genres.append(genre)
+
+    print_wrap('Si la ID no es correcta será generada automaticamente', fill=FILL_CHAR)
+    new_id = prompt(str_prompt=f'id: {book["id"]} >> '.rjust(SCREEN_WIDTH // 3))
+    new_id = user_value_format(new_id, 'id')
+    
+    if is_valid_id(db, book, new_id):
+        book['id'] = new_id
+    else:
+        book['id'] = id_generator(db, book['genre'])
+     
             
 def show_books(books):
     print_wrap('Listado de Libros', fill=FILL_CHAR)
-    print_wrap('''\n{:4}  {:35} {:25} {:25}\n\n'''.format('','Titulo', 'Autor', 'Género'), )
+    BOOKS_HEADER = '''\n{:4}  {:4}\t{:40} {:35} {:25}\n\n'''.format('', *(key.upper() for key in BOOK_KEYS))
+    print_wrap(BOOKS_HEADER)
+    pag = 1
     for i, book in enumerate(books, 1):
-        print_wrap(f'''{i:4}. {book['id']} {book['title']:35} {book['author']:25} {book['genre']:25}\n''')
-
-
+        print_wrap(f'''{i:4}. {book['id']}\t{book['title']:40} {book['author']:35} {book['genre']:25}\n''')
+        # Algun tipo de paginación
+        if i % LINES_PER_PAGE == 0:
+            print_wrap(f'({pag})', fill=FILL_CHAR)
+            prompt(str_prompt=': ')
+            if i != len(books): 
+                print_wrap(BOOKS_HEADER)
+                pag += 1
+    if not len(books) % LINES_PER_PAGE == 0:
+        print_wrap(f'({pag})', fill=FILL_CHAR)
+        prompt(str_prompt=': ')
+    
+    
 def create(db):
+    print_wrap('Nuevo Libro\n\n', fill=FILL_CHAR)
+    # TODO implement loop for create books
     new_book = {}
     for key in BOOK_KEYS[1:]:
-        value = input(f'{key}: ')
+        value = prompt(str_prompt=f'{key}: '.rjust(SCREEN_WIDTH // 3))
         value = user_value_format(value, key)
         new_book[key] = value
         
     new_book['id'] = id_generator(db, new_book['genre'])
     db.append(new_book)
+    
+    print_wrap('\nNuevo libro agregado a la biblioteca\n', fill=FILL_CHAR)
         
 
 def create_update_delete_menu(db, books):
-    print_wrap('\n\nCrear(C) Editar(E) Borrar(B)')
+    print_wrap('\n\nCrear(C) Editar(E) Borrar(B) Inicio(I)')
     print_wrap('Ej. B2, E1')
 
     user_action = prompt().lower()
     if len(user_action) > 1:
-        action, book_id = user_action[0], user_action[1] 
+        action, book_id = user_action[0], user_action[1:] 
         # los libroso son mostrados [index + 1] en el menu de show_books
         if book_id.isdigit():
             book_id = int(book_id) - 1
@@ -215,17 +250,17 @@ def create_update_delete_menu(db, books):
                 if action == 'b':
                     remove(db, books[book_id])
                 elif action == 'e':
-                    update(books[book_id])
+                    update(db, books[book_id])
                 else:
-                    print('La acción no existe o aun no se ha implementado' )
+                    print_wrap('La acción no existe o aun no se ha implementado' )
         else:
             print('Formato de comando erroneo')
-    elif user_action:
-            if user_action == 'c':
-                create(db)
-    else:
-        print('Formato de comando erroneo')
             
+    elif user_action == 'c':
+        create(db)
+        
+    elif user_action and user_action != 'i':
+        print('Formato de comando erroneo')     
     main(db)
 
 
@@ -242,13 +277,14 @@ def main(db):
             books = search(db, patrones_de_busqueda[user_input])
             show_books(books)
             create_update_delete_menu(db, books)
-        elif user_input == '5':
+        elif user_input == 'l':
             books = db
             show_books(books)
             create_update_delete_menu(db, books)
-        elif user_input == '6':
+        elif user_input == 'c':
             create(db)
         else:
             print('Por favor introduzca una opción válida, pulse cualquier tecla para contiuar')
+
 
 main(DB)
