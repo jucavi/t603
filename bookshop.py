@@ -188,7 +188,11 @@ def update(db, book):
             new_value = prompt(str_prompt=f'{key}: {value} >> '.rjust(SCREEN_WIDTH // 3))
            
             if new_value:
-                if alert(action='modificar', message=PROMPT.rjust(SCREEN_WIDTH // 3)):
+                #quedaria mejor si fuese en ingles
+                message = f'¿Desea modificar el {key.capitalize()} {value.title()} por {new_value.title()} (Y/n)?'
+                prompt_message = PROMPT.rjust(SCREEN_WIDTH // 3)
+                
+                if alert(message, prompt_message):
                     book[key] = user_value_format(new_value, key)
                 
     genre = book['genre']
