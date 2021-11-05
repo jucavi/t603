@@ -92,18 +92,19 @@ def id_generator(db, genre):
     id_partial = f'{chars}_'
     
     books_by_genre = find_by_user_value(db, 'id', id_partial)
-    if books_by_genre:
+    try:
         max_id = max(int(book['id'][-1]) for book in books_by_genre)
-    else:
+    except :
         max_id = 0
      
     return id_partial + str(max_id + 1)
 
 
 def find_by_user_value(db, key, user_value):
-    if user_value:
+    try:
         return [book for book in db if (book.get(key) == user_value) or (user_value.lower() in book.get(key).lower()) ]
-    return []
+    except:
+        return []
 
 def user_value_format(user_value, key):
     if key == 'author':
@@ -226,7 +227,8 @@ def create_update_delete_menu(db, books):
         print('Formato de comando erroneo')
             
     main(db)
-    
+
+
 def main(db):
     while True:
         menu(patrones_de_busqueda)
