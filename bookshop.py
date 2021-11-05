@@ -219,21 +219,29 @@ def show_books(books):
         print_wrap(f'({pag})', fill=FILL_CHAR)
         prompt(str_prompt=': ')
     
+# TODO refactor alert to manage create, search, remove, update, messages     
     
 def create(db):
     print_wrap('Nuevo Libro\n\n', fill=FILL_CHAR)
     # TODO implement loop for create books
-    new_book = {}
-    for key in BOOK_KEYS[1:]:
-        value = prompt(str_prompt=f'{key}: '.rjust(SCREEN_WIDTH // 3))
-        value = user_value_format(value, key)
-        new_book[key] = value
+    while True:
+        new_book = {}
+        for key in BOOK_KEYS[1:]:
+            value = prompt(str_prompt=f'{key}: '.rjust(SCREEN_WIDTH // 3))
+            value = user_value_format(value, key)
+            new_book[key] = value
+            
+        new_book['id'] = id_generator(db, new_book['genre'])
+        db.append(new_book)
+        print_wrap('\nNuevo libro agregado a la biblioteca\n', fill=FILL_CHAR)
+        print_wrap(f'¿Desea crear otro libro? (Y/n)')
+        reintentar = prompt(str_prompt=PROMPT.rjust(SCREEN_WIDTH // 3)).lower()
         
-    new_book['id'] = id_generator(db, new_book['genre'])
-    db.append(new_book)
-    
-    print_wrap('\nNuevo libro agregado a la biblioteca\n', fill=FILL_CHAR)
-        
+        if reintentar == 'y':
+            create(db)  
+        else:
+            main(db)
+         
 
 def create_update_delete_menu(db, books):
     print_wrap('\n\nCrear(C) Editar(E) Borrar(B) Inicio(I)')
@@ -242,7 +250,7 @@ def create_update_delete_menu(db, books):
     user_action = prompt().lower()
     if len(user_action) > 1:
         action, book_id = user_action[0], user_action[1:] 
-        # los libroso son mostrados [index + 1] en el menu de show_books
+        # los libros son mostrados [index + 1] en el menu de show_books
         if book_id.isdigit():
             book_id = int(book_id) - 1
         
