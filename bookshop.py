@@ -1,4 +1,6 @@
 import pickle
+import os
+import datetime
 
 DB = [{
     "id": "cf_1",
@@ -62,7 +64,9 @@ DB = [{
 },
 ]
 
-DB_FILE = 'book_store_database.pckl'
+CWD = os.path.dirname(__file__)
+LOG_FILE = '/log.txt'
+DB_FILE = '/book_store_database.pckl'
 PROMPT = '>> '
 SCREEN_WIDTH = 120
 FILL_CHAR = '-'
@@ -147,7 +151,7 @@ def search(db, key):
         else:
             main(db)
             
-    return books
+    return books, key
    
    
 def menu(patrones_de_busqueda):
@@ -185,6 +189,8 @@ def remove(db, book):
 
 
 def update(db, book):
+    write_to_log('', book, 'Editando -->')
+    
     print_wrap('Si desea modificar entre el <NUEVO> valor sino pulse <INTRO>\n', fill=FILL_CHAR)
     for key, value in book.items():
         if key != 'id':
@@ -210,6 +216,8 @@ def update(db, book):
         book['id'] = new_id
     else:
         book['id'] = id_generator(db, book['genre'])
+        
+    write_to_log('', book, 'Editado a <--')
      
             
 def show_books(books):
@@ -242,6 +250,9 @@ def create(db):
             new_book[key] = value
             
         new_book['id'] = id_generator(db, new_book['genre'])
+        
+        write_to_log('', new_book, 'Creado')
+        
         db.append(new_book)
         print_wrap('\nNuevo libro agregado a la biblioteca\n', fill=FILL_CHAR)
         
@@ -267,6 +278,7 @@ def create_update_delete_menu(db, books):
         
             if book_id in range(len(books)):
                 if action == 'b':
+                    write_to_log('', books[book_id], 'Borrado')
                     remove(db, books[book_id])
                 elif action == 'e':
                     update(db, books[book_id])
@@ -282,14 +294,29 @@ def create_update_delete_menu(db, books):
         print('Formato de comando erroneo')     
     main(db)
 
+    
+def write_to_log(search_term, books, msg):
+    timestamp = datetime.datetime.now()
+    log_entry = '{}\t{} {} {} {}\n'
+    
+    with open(CWD + LOG_FILE, 'a+') as file:
+        if books:
+            file.write(f'{msg} {search_term.upper()}\n')
+        if type(books) == list:
+            for book in books:
+                file.write(log_entry.format(timestamp, book["id"], book["title"], book["author"], book["genre"]))
+        else:
+            book = books # only one book
+            file.write(log_entry.format(timestamp, book["id"], book["title"], book["author"], book["genre"]))
 
-def main(db): 
+
+def main(db):
     while True:
         menu(patrones_de_busqueda)
         user_input = prompt().lower()
         
         if user_input == 'q':
-            with open(DB_FILE, 'wb') as db_file:
+            with open(CWD + DB_FILE, 'wb') as db_file:
                 try:
                     pickle.dump(db, db_file)
                     print(f'Guardando en {DB_FILE}...')
@@ -299,8 +326,11 @@ def main(db):
             exit()
         
         if user_input in patrones_de_busqueda:
-            books = search(db, patrones_de_busqueda[user_input])
-            show_books(books)
+            books, search_term = search(db, patrones_de_busqueda[user_input])
+
+            write_to_log(search_term, books, 'Busqueda por')
+            
+            show_books(books)   
             create_update_delete_menu(db, books)
         elif user_input == 'l':
             books = db
@@ -310,12 +340,13 @@ def main(db):
             create(db)
         else:
             print('Por favor introduzca una opción válida, pulse cualquier tecla para contiuar')
-            
+
+  
 try:
-    with open(DB_FILE, 'rb') as db_file:    
+    with open(CWD + DB_FILE, 'rb') as db_file:    
         db = pickle.load(db_file)
 except Exception:
     main(DB)
 else:
     main(db)
-    
+
