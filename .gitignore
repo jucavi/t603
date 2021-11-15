@@ -2,5 +2,6 @@
 *.sh
 *.db
 *.txt
+*.csv
 
 __pycache__
