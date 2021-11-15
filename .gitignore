@@ -1,2 +1,6 @@
-*.pckl
+*.pc*
 *.sh
+*.db
+*.txt
+
+__pycache__
