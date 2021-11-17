@@ -1,6 +1,7 @@
 import pickle
 import os
 import datetime
+import csv
 
 DB = [{
     "id": "cf_1",
@@ -65,8 +66,9 @@ DB = [{
 ]
 
 CWD = os.path.dirname(__file__)
-LOG_FILE = '/log.txt'
-DB_FILE = '/book_store_database.pckl'
+LOG_FILE = os.path.join(CWD, 'log.txt')
+PICKLE_FILE = os.path.join(CWD, 'book_store_database.pckl')
+CSV_FILE = os.path.join(CWD, 'db.csv')
 PROMPT = '>> '
 SCREEN_WIDTH = 120
 FILL_CHAR = '-'
@@ -147,7 +149,7 @@ def search(db, key):
         prompt_message = PROMPT.rjust(SCREEN_WIDTH // 3)
 
         if alert(message, prompt_message):
-            books.extend(search(db, key))
+            books.extend(search(db, key)[0])
         else:
             main(db)
             
@@ -299,16 +301,39 @@ def write_to_log(search_term, books, msg):
     timestamp = datetime.datetime.now()
     log_entry = '{}\t{} {} {} {}\n'
     
-    with open(CWD + LOG_FILE, 'a+') as file:
+    with open(LOG_FILE, 'a+') as file:
         if books:
             file.write(f'{msg} {search_term.upper()}\n')
         if type(books) == list:
             for book in books:
-                file.write(log_entry.format(timestamp, book["id"], book["title"], book["author"], book["genre"]))
+                if isinstance(book, dict) and book:
+                    file.write(log_entry.format(timestamp, book["id"], book["title"], book["author"], book["genre"]))
         else:
             book = books # only one book
             file.write(log_entry.format(timestamp, book["id"], book["title"], book["author"], book["genre"]))
 
+            
+def export_pickle(db, file):
+    with open(file, 'wb') as file:
+                try:
+                    pickle.dump(db, file)
+                    print(f'Guardando en {file}...')
+                except:
+                    print('Imposible guardar en la database')
+                    
+
+def export_csv(db, file):
+    header = ['id', 'title', 'author', 'genre']
+    with open(file, 'w') as file:
+        try:
+            print(f'Guardando en db.csv...')
+            csv_writer = csv.writer(file, delimiter=';')
+            csv_writer.writerow(header)
+            for book in db:
+                # csv_writer.writerow(book.values()) 
+                csv_writer.writerow([book['id'], book['title'], book['author'], book['genre']]) 
+        except:
+            print('Imposible guardar en la database')
 
 def main(db):
     while True:
@@ -316,12 +341,8 @@ def main(db):
         user_input = prompt().lower()
         
         if user_input == 'q':
-            with open(CWD + DB_FILE, 'wb') as db_file:
-                try:
-                    pickle.dump(db, db_file)
-                    print(f'Guardando en {DB_FILE}...')
-                except:
-                    print('No se guarda en la database')
+            export_pickle(db, PICKLE_FILE)
+            export_csv(db, CSV_FILE)                 
             adios()
             exit()
         
@@ -343,10 +364,11 @@ def main(db):
 
   
 try:
-    with open(CWD + DB_FILE, 'rb') as db_file:    
+    with open(PICKLE_FILE , 'rb') as db_file:    
         db = pickle.load(db_file)
 except Exception:
     main(DB)
 else:
     main(db)
 
+open('', )
