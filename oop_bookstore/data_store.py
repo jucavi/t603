@@ -36,7 +36,8 @@ class DataStore:
             isbn (str): ISBN 
 
         Returns:
-            [Book]: if book with isbn exist in DataStore, [None] if not exist
+            Book: If book with isbn exist in DataStore
+            None: If not exist
         """
         isbn = isbn.upper()
         
@@ -65,5 +66,7 @@ class DataStore:
     def show_all(self):
         for book in self.books:
             print(book)
+
+''.join()
             
         
