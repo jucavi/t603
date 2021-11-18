@@ -43,50 +43,53 @@ def read_dataframe(file_path, delimiter=';'):
         return data
 
 def search_by_ine(dataframe, ine_code):
-    for row in dataframe[1:]:
+    for row in dataframe:
         if row[2] == ine_code:
             return row
+    return None
 
 def get_bigest_area(dataframe):
-    return max(row[-2] for row in dataframe[1:])
+    return max(row[-2] for row in dataframe)
 
-def get_bigest_city_area(dataframe):
+def get_bigest_citys_area(dataframe):
     max_area = 0
-    city = None
-    for row in dataframe[1:]:
+    city = []
+    for row in dataframe:
         if row[-2] > max_area:
             max_area = row[-2]
-            city = row[1]
-            
+            city.append(row)           
     return city
             
 def get_total_surface(dataframe, use_reduce=True):
     if use_reduce:
-        return reduce(lambda x, y: x + y, (float(row[-2]) for row in dataframe[1:]))
-    return sum(float(row[-2]) for row in dataframe[1:])
+        return reduce(lambda x, y: x + y, (float(row[-2]) for row in dataframe))
+    return sum(float(row[-2]) for row in dataframe)
 
 def get_total_population_density(dataframe, use_reduce=True):
     if use_reduce:
-        return reduce(lambda x, y: x + y, (float(row[-1]) for row in dataframe[1:]))
-    return sum(float(row[-1]) for row in dataframe[1:])
+        return reduce(lambda x, y: x + y, (float(row[-1]) for row in dataframe))
+    return sum(float(row[-1]) for row in dataframe)
 
 def get_population_of(dataframe, city):
-    for row in dataframe[1:]:
+    for row in dataframe:
         if row[1].strip() == city.capitalize():
             return float(row[-2]) * float(row[-1])
+
+def get_population(dataframe):
+    return [float(row[-2]) * float(row[-1]) for row in dataframe]
 
 def get_population_median(dataframe, method=''):
     total_population = 0
     
     if method == 'reduce':
-        total_population = reduce(lambda x, y: x + y, (float(row[-2]) * float(row[-1]) for row in dataframe[1:]))
+        total_population = reduce(lambda x, y: x + y, (float(row[-2]) * float(row[-1]) for row in dataframe))
     elif method == 'sum':
-        total_population = sum(float(row[-2]) * float(row[-1]) for row in dataframe[1:])
+        total_population = sum(float(row[-2]) * float(row[-1]) for row in dataframe)
     else:
-        for row in dataframe[1:]:
+        for row in dataframe:
             total_population += float(row[-2]) * float(row[-1])
     
-    return total_population / len(dataframe[1:])
+    return total_population / len(dataframe)
 
 # Returns (first_digit, probability) [1 <= digit <=9]
 def get_first_significant_digit_distribution(numerical_set):
@@ -94,10 +97,8 @@ def get_first_significant_digit_distribution(numerical_set):
     # Operates over list and generators
     len_data = numerical_set.__sizeof__()
     for num in numerical_set:
-        for digit in str(num):
-            if digit in '123456789':
-                distribution[digit] = distribution.get(digit, 0) + 1
-                break
+        if str(num)[0]:
+            distribution[str(num)[0]] = distribution.get(str(num)[0], 0) + 1
     
     return [(key, value / len_data) for key, value in distribution.items()]
 
@@ -123,7 +124,7 @@ if __name__ == '__main__':
         if data:
             write_raw_data_to(data, filename, path)
 
-    df = read_dataframe(file_path)
+    df = read_dataframe(file_path)[1:]
 
     print('With reduce:', get_total_population_density(df))
     print('Without reduce:', get_total_population_density(df, use_reduce=False))
@@ -134,22 +135,33 @@ if __name__ == '__main__':
     print('Median:', get_population_median(df))
 
     # Testing get_first_significant_digit_distribution with list and generator
-    density = [float(row[-1]) for row in df[1:]]
-    area = (float(row[-2]) for row in df[1:])
+    density = [float(row[-1]) for row in df]
+    area = (float(row[-2]) for row in df)
+    population = get_population(df)
     
-    distribution_density = get_first_significant_digit_distribution((density))
-    distribution_area = get_first_significant_digit_distribution((area))
-    distribution_density = sorted(distribution_density, key=lambda x: x[1], reverse=True)
-    distribution_area = sorted(distribution_area, key=lambda x: x[1], reverse=True)
+    density_distribution = get_first_significant_digit_distribution((density))
+    area_distribution = get_first_significant_digit_distribution((area))
+    population_distribution = get_first_significant_digit_distribution((population))
+    # print(population)
     
-    plt.figure(figsize=(12, 7))
-    x, y = parse_to_axis(distribution_density)
-    plt.subplot(121)
-    plt.ylabel('Density')
+    density_distribution = sorted(density_distribution, key=lambda x: x[0])
+    area_distribution = sorted(area_distribution, key=lambda x: x[0])
+    population_distribution = sorted(population_distribution, key=lambda x: x[0])
+    
+    fig = plt.figure(figsize=(18, 5))
+    fig.suptitle('Belford\'s Law')
+    x, y = parse_to_axis(density_distribution)
+    plt.subplot(131)
+    plt.ylabel('Population Density')
     plt.bar(x, y)
 
-    plt.subplot(122)
-    x, y = parse_to_axis(distribution_area)
-    plt.ylabel('Area')
+    plt.subplot(132)
+    x, y = parse_to_axis(area_distribution)
+    plt.ylabel('Surface Area')
+    plt.bar(x, y)
+    
+    plt.subplot(133)
+    x, y = parse_to_axis(population_distribution)
+    plt.ylabel('Population')
     plt.bar(x, y)
     plt.show()
