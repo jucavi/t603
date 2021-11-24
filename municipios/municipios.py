@@ -28,7 +28,7 @@ def write_raw_data_to(data, filename, path='.'):
         with open(os.path.join(path, filename), 'w') as file:
             file.write(data)
     except Exception as e:
-        print('Error: {e.message}')
+        print(f'Error: {e.message}')
         
 # Read data from csv file   
 def read_dataframe(file_path, delimiter=';'):
@@ -38,7 +38,7 @@ def read_dataframe(file_path, delimiter=';'):
             data = list(csv_reader)
     except Exception as e:
         print(f'Unable to read from {file_path}')
-        print('Error: {e.message}')
+        print(f'Error: {e.message}')
     else:
         return data
 
@@ -124,6 +124,7 @@ if __name__ == '__main__':
         if data:
             write_raw_data_to(data, filename, path)
 
+    df_json = read_dataframe(file_path)
     df = read_dataframe(file_path)[1:]
 
     print('With reduce:', get_total_population_density(df))
@@ -165,3 +166,4 @@ if __name__ == '__main__':
     plt.ylabel('Population')
     plt.bar(x, y)
     plt.show()
+
