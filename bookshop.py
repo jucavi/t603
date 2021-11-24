@@ -315,11 +315,11 @@ def write_to_log(search_term, books, msg):
             
 def export_pickle(db, file):
     with open(file, 'wb') as file:
-                try:
-                    pickle.dump(db, file)
-                    print(f'Guardando en {file}...')
-                except:
-                    print('Imposible guardar en la database')
+        try:
+            pickle.dump(db, file)
+            print(f'Guardando en {file}...')
+        except:
+            print('Imposible guardar en la database')
                     
 
 def export_csv(db, file):
@@ -371,4 +371,3 @@ except Exception:
 else:
     main(db)
 
-open('', )
