@@ -16,11 +16,13 @@ def get_data():
     return data
 
 
-def write_data(data):
+def write_data(data, message=False):
     try:
         with open(path, 'w', encoding='utf-8') as file:
-            print(f'Writing to {file}...', end=' ')
+            if message:
+                print(f'Writing to {file}...', end=' ')
             json.dump(data, file, indent=4)
-            print('Done!')
+            if message:
+                print('Done!')
     except Exception:
         print(f'Error: Unable to Write {filename}')

@@ -22,7 +22,7 @@ def distance_to(source, target):
     except Exception:
         return -1
     
-    return 2 * r * math.asin(math.sqrt(h))
+    return round(2 * r * math.asin(math.sqrt(h)))
 
 if __name__ == '__main__':
     print('Get:', round(distance_to((51.5085,-0.1257), (40.4165,-3.7026))), 'Expected:', 1264)
