@@ -23,11 +23,6 @@ def store_woeids(locations):
     if initial_len < len(data.keys()):
         write_data(data)
 
-def city_woeid(location):
-    city = location['title']
-    woeid = data.get(city) or location['woeid']
-
-    return city, woeid
 
 def get_locations(city, loc=False):
     query = 'lattlong' if loc else 'query'
@@ -35,13 +30,14 @@ def get_locations(city, loc=False):
     return get_url(f'{URL}/search/?{query}={city}') 
 
      
-def get_forecast(woeid, date=None):  
+def get_forecast(woeid, date=None, strict=True):  
     url = f'{URL}/{woeid}'
     if date:
         forecast = get_url(f'{url}/{date}/')
     else:
-        forecast = get_url(url)['consolidated_weather']        
-            
+        forecast = get_url(url)
+        if strict:
+            forecast = forecast['consolidated_weather']
     return forecast
 
      
@@ -59,6 +55,7 @@ def show_forecast(city, forecast, limit=3):
         print(f'Predictability:      {day["predictability"]} %')
         input()
 
+
 def user_request():
     user = user_input()
     loc = False
@@ -72,38 +69,45 @@ def user_request():
         
     return value, loc, date
 
+
 def parse_latt_long(city):
     latt, long = city['latt_long'].split(',')
     
     return float(latt), float(long)
+
 
 def from_to_distance(source, destination):           
     source = parse_latt_long(source)
     destination = parse_latt_long(destination)
     return distance_to(source, destination)
 
-# if __name__ == '__main__':
+
 while True:
     main_screen()
     user = user_input()
-
+    locations = []
+    
     if user == 'Q':
         break
 
     if user == '1':
         query = user_input('City ')
-        locations = get_locations(query)
-        if locations:
-            city, woeid = city_woeid(locations[0])
-            show_forecast(city, get_forecast(woeid))
-        else:
-            print('No data Found.')
+        woeid = data.get(query)
+        if not woeid:
+            locations = get_locations(query)
+            if locations:
+                query, woeid = locations[0]['title'], locations[0]['woeid']
+            else:
+                print('No data Found.')
+                continue
+                  
+        show_forecast(query, get_forecast(woeid))
             
     elif user == '2':
         query = user_input('Lattitude and longitude ')
         locations = get_locations(query, True)
         if locations:
-            city, woeid = city_woeid(locations[0])
+            city, woeid = locations[0]['title'], locations[0]['woeid']
             show_forecast(city, get_forecast(woeid))
         else:
             print('No data Found.')
@@ -112,9 +116,13 @@ while True:
         by_date_screen()
         try:
             query, loc, date = user_request()
-            locations = get_locations(query, loc)
-            city, woeid = city_woeid(locations[0])
-            show_forecast(city, get_forecast(woeid, date))
+            woeid = None
+            if not loc:
+                woeid = woeid = data.get(query)
+            if not woeid:
+                locations = get_locations(query, loc)
+                query, woeid = locations[0]['title'], locations[0]['woeid']
+            show_forecast(query, get_forecast(woeid, date))
         except:
             print('No data Found.')
             
@@ -124,23 +132,26 @@ while True:
             
             from_loc = get_locations(source)[0]['latt_long']
             dest_loc = get_locations(destination)[0]
-            dest_title, woeid_loc = city_woeid(dest_loc)
+            
+            woeid_loc = data.get(destination)
+            if not woeid_loc:
+                destination, woeid_loc = dest_loc[0]['title'], dest_loc[0]['woeid']
             
             locations = get_locations(from_loc, True)
             from_city = locations.pop(0)
             dest_city = {}
             for candidate in locations:
-                if candidate['title'] == dest_title:
+                if candidate['title'] == destination:
                     dest_city = candidate
                     break
                 
             if dest_city:
-                distance = abs(from_city['distance'] - dest_city['distance']) / 1000
+                distance =  (dest_city['distance'] - from_city['distance']) / 1000
             else:
                 distance = from_to_distance(from_city, dest_loc)
                 
-            forecast = get_forecast(woeid_loc, date=date)[:1]
-            show_forecast(dest_title, forecast)
+            forecast = get_forecast(woeid_loc, date=date)[0]
+            show_forecast(destination, forecast)
             
             if forecast[0]['weather_state_abbr'] in ('sn', 'sl', 'h', 't', 'hr'):
                 print(f'Warning Weather state: *** {forecast[0]["weather_state_name"].upper()} ***')
