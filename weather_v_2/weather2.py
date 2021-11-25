@@ -1,41 +1,11 @@
+from IO import get_data, write_data
 import requests
-import rwoeid
-import math
 
-data = rwoeid.get_data()
-# Earth radius
-R = 6371e3
+data = get_data()
 URL = 'https://www.metaweather.com/api/location'
 
 def user_input(message=''):    
     return input(f'\n{message}>> ').strip().capitalize()
-
-def phi(latt):
-    return float(latt) * math.pi / 180
-
-def delta(source_coord, target_coord):
-    return (float(target_coord) - float(source_coord)) * math.pi / 180
-
-def distance(source, target):
-    try:
-        source_latt, source_long = source.split(',')
-        target_latt, target_long = target.split(',')
-        
-        source_phi = phi(source_latt)
-        target_phi = phi(target_latt)
-        delta_phi = delta(source_latt, target_latt)
-        delta_lambda = delta(source_long, target_long) 
-        
-        a = math.sin(delta_phi/2) * math.sin(delta_phi/2) \
-            + math.cos(source_phi) * math.cos(target_phi/2) \
-            * math.sin(delta_lambda/2) * math.sin(delta_lambda/2)
-            
-        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-        
-        return R * c     
-    except Exception as e:
-        print(e)
-        return 0
 
 def get_url(url):
     try:
@@ -50,7 +20,7 @@ def get_woeid(locs):
         data[loc['title']] = loc['woeid']
     
     if initial_len < len(data.keys()):
-        rwoeid.write_data(data)
+        write_data(data)
     
     if locs:
         return locs[0]['woeid']
