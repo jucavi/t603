@@ -2,6 +2,7 @@ from IO import get_data, write_data
 from distOps import distance_to
 from screen import main_screen, by_date_screen, user_input, trip_planner
 import requests
+import json
 
 data = get_data()
 URL = 'https://www.metaweather.com/api/location'
@@ -81,11 +82,46 @@ def from_to_distance(source, destination):
     destination = parse_latt_long(destination)
     return distance_to(source, destination)
 
+def get_destination_info():
+    dest_city = {}
+    try:
+        source, destination, date = trip_planner()
+        
+        from_lattlong = get_locations(source)[0]['latt_long']
+        dest_loc = get_locations(destination)[0]
+        woeid = dest_loc['woeid']
+        
+        candidates = get_locations(from_lattlong, True)
+        from_city = candidates.pop(0)
+    except:
+        print('Invalid input')
+        return dest_city, []
+    
+    for candidate in candidates:
+        if candidate['title'] == destination:
+            dest_city = {
+                'title': candidate['title'],
+                'distance': (candidate['distance'] - from_city['distance']) / 1000  
+            }
+            break
+
+    if not dest_city:
+        dest_city = {
+                'title': dest_loc['title'],
+                'distance': from_to_distance(from_city, dest_loc)  
+            }
+        
+    dest_city['forecast'] = get_forecast(woeid, date=date)
+    dest_city['is_bad_weather'] = dest_city['forecast'][0]['weather_state_abbr'] in ('sn', 'sl', 'h', 't', 'hr')
+    dest_city['is_windy'] = dest_city['forecast'][0]['wind_speed'] > 10
+    dest_city['speed'] = 90 if dest_city['is_windy'] else 100
+    dest_city['duration'] = dest_city['distance'] / dest_city['speed']
+    
+    return dest_city, candidates
 
 while True:
     main_screen()
     user = user_input()
-    locations = []
     
     if user == 'Q':
         break
@@ -116,9 +152,7 @@ while True:
         by_date_screen()
         try:
             query, loc, date = user_request()
-            woeid = None
-            if not loc:
-                woeid = woeid = data.get(query)
+            woeid = data.get(query)
             if not woeid:
                 locations = get_locations(query, loc)
                 query, woeid = locations[0]['title'], locations[0]['woeid']
@@ -127,47 +161,19 @@ while True:
             print('No data Found.')
             
     elif user == '4':
-        try:
-            source, destination, date = trip_planner()
-            
-            from_loc = get_locations(source)[0]['latt_long']
-            dest_loc = get_locations(destination)[0]
-            
-            woeid_loc = data.get(destination)
-            if not woeid_loc:
-                destination, woeid_loc = dest_loc[0]['title'], dest_loc[0]['woeid']
-            
-            locations = get_locations(from_loc, True)
-            from_city = locations.pop(0)
-            dest_city = {}
-            for candidate in locations:
-                if candidate['title'] == destination:
-                    dest_city = candidate
-                    break
-                
-            if dest_city:
-                distance =  (dest_city['distance'] - from_city['distance']) / 1000
-            else:
-                distance = from_to_distance(from_city, dest_loc)
-                
-            forecast = get_forecast(woeid_loc, date=date)[0]
-            show_forecast(destination, forecast)
-            
-            if forecast[0]['weather_state_abbr'] in ('sn', 'sl', 'h', 't', 'hr'):
-                print(f'Warning Weather state: *** {forecast[0]["weather_state_name"].upper()} ***')
-            else:
-                print(f'Weather state:       {forecast[0]["weather_state_name"]}')
-                
-            speed_limit = 10
-            if forecast[0]['wind_speed'] > speed_limit:
-                duration = distance / speed_limit
-            else:
-                duration = distance / 100
-                
-            print(f'Distance:            {round(distance)} Kilometers')
-            print(f'Trip duration:       {round(duration)} h')  
-        except Exception as e:
-            # print(f'Exception raised: {e}')
-            print('Sorry no data found or invalid input, try again.')
+        dest_city, locations = get_destination_info()
+        
+        if dest_city:
+            if dest_city['is_windy']:
+                print(f'Warning weather state in {dest_city["title"]}: *** {dest_city["forecast"][0]["weather_state_name"].upper()} ***')
+
+            show_forecast(dest_city['title'], dest_city['forecast'], limit=1)
+            print(f'Distance:            {round(dest_city["distance"])} Kilometers')
+            print(f'{round(dest_city["forecast"][0]["wind_speed"], 2)} knots wind speed')
+            print(f'Stimated trip speed {dest_city["speed"]} kmh')
+            print(f'Trip duration:       {round(dest_city["duration"])} h')
+            input()
+        else:
+            print('No data Found.')
                    
     store_woeids(locations)
