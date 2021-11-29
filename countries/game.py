@@ -13,18 +13,21 @@ def get_region(name):
     return []
 
    
-def get_country(name):
+def get_country(name, full=False):
     country = requests.get(f'{url}/name/{name}')
     if country.ok:
         country = country.json()[0]
-        return {
-            'name': country['name']['common'],
-            'capital': country['capital'][0],
-            'languages': list(country['languages'].values()),
-            'population': country['population'],
-            'area': country['area'],
-            'flag': country['flags']['png']
-        }
+        if full:
+            return country
+        else:
+            return {
+                'name': country['name']['common'],
+                'capital': country['capital'][0],
+                'languages': list(country['languages'].values()),
+                'population': country['population'],
+                'area': country['area'],
+                'flag': country['flags']['svg']
+            }
     else:
         print(f'Error: {country.status_code}!\nCountry {name} not found!')
         return {}
@@ -48,18 +51,28 @@ def export_flag_image(country, path=None):
         path = get_path()
         
     try:
-        filename = f'{country.get("name").lower()}.png'
+        # Using flag
+        """country = get_country(country, full=True)
+        filename =  filename = f'{country["name"]["common"].lower()}.svg'"""
+
+        filename = f'{country.get("name").lower()}.svg'
         filepath = os.path.join(path, filename)
         # If flag not saved yet
         if not os.path.exists(filepath):
-            flag_res = requests.get(country.get('flag'))
-            if flag_res.ok:
+            # Using flag
+            """with open(filepath, 'wb') as file:
+                    file.write(country['flag'].encode())
+            print(f'Flag saved in {filepath}')"""
+            
+            res = requests.get(country.get('flag'))
+            if res.ok:
                 with open(filepath, 'wb') as file:
-                    file.write(flag_res.content)
+                    file.write(res.content)
                 print(f'Flag saved in {filepath}')
         else:
             print(f'Flag already saved in {filepath}')
-    except Exception:
+    except Exception as e:
+        print(e)
         print('Missing country flag!')
         
         
@@ -179,6 +192,8 @@ while True:
         1. Get country
         """
         country = input('Country\'s flag: ')
+        # Using flag 
+        # export_flag_image(country)
         export_flag_image(get_country(country))
         input()
 
@@ -223,3 +238,8 @@ while True:
 # region = get_region('europe')
 # negative_area = list(filter(lambda x: x['area'] < 0, region))
 # Svalbard and Jan Mayen
+
+# ['Asia', 'Africa', 'Americas', 'Europe', 'Antarctic', 'Oceania']"
+# url = 'https://restcountries.com/v3.1/all'
+# all_countries = requests.get(url).json()
+# print(set(map(lambda x: x['region']), all_countries))
