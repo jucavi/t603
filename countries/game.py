@@ -23,7 +23,7 @@ def get_country(name, full=False):
             return {
                 'name': country['name']['common'],
                 'capital': country['capital'][0],
-                'languages': list(country['languages'].values()),
+                'region': country['region'],
                 'population': country['population'],
                 'area': country['area'],
                 'flag': country['flags']['svg']
@@ -80,11 +80,11 @@ def print_country(country):
     print()
     for key, value in country.items():
         if type(value) == list:
-            print(f'{key}:')
+            print(f'{key.capitalize()}:')
             for item in value:
                 print(f'  * {item}')
         else:
-            print(f'{key:<12}: {value}')
+            print(f'{key.capitalize():<13}: {value}')
 
 
 def main_screen():
@@ -183,7 +183,7 @@ while True:
         2. Search Country
         3. Print
         """
-        country = input('Country to searh: ')
+        country = input('\nCountry to searh: ')
         print_country(get_country(country))
         input()
     
@@ -191,7 +191,7 @@ while True:
         """
         1. Get country
         """
-        country = input('Country\'s flag: ')
+        country = input('\nCountry\'s flag: ')
         # Using flag 
         # export_flag_image(country)
         export_flag_image(get_country(country))
@@ -243,3 +243,4 @@ while True:
 # url = 'https://restcountries.com/v3.1/all'
 # all_countries = requests.get(url).json()
 # print(set(map(lambda x: x['region']), all_countries))
+# negative_area = list(filter(lambda x: x['area'] < 0, all_countries))
