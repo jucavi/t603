@@ -2,7 +2,6 @@ from IO import get_data, write_data
 from distOps import distance_to
 from screen import main_screen, by_date_screen, user_input, trip_planner
 import requests
-import json
 
 data = get_data()
 URL = 'https://www.metaweather.com/api/location'
@@ -87,7 +86,8 @@ def get_destination_info():
     try:
         source, destination, date = trip_planner()
         
-        from_lattlong = get_locations(source)[0]['latt_long']
+        source = get_locations(source)[0]
+        from_lattlong = source['latt_long']
         dest_loc = get_locations(destination)[0]
         woeid = dest_loc['woeid']
         
@@ -110,7 +110,8 @@ def get_destination_info():
                 'title': dest_loc['title'],
                 'distance': from_to_distance(from_city, dest_loc)  
             }
-        
+    
+    dest_city['from'] = source['title']
     dest_city['forecast'] = get_forecast(woeid, date=date)
     dest_city['is_bad_weather'] = dest_city['forecast'][0]['weather_state_abbr'] in ('sn', 'sl', 'h', 't', 'hr')
     dest_city['is_windy'] = dest_city['forecast'][0]['wind_speed'] > 10
@@ -122,6 +123,7 @@ def get_destination_info():
 while True:
     main_screen()
     user = user_input()
+    locations = []
     
     if user == 'Q':
         break
@@ -164,6 +166,7 @@ while True:
         dest_city, locations = get_destination_info()
         
         if dest_city:
+            print(f'\n## Trip from {dest_city["from"]} to {dest_city["title"]} ##')
             if dest_city['is_windy']:
                 print(f'Warning weather state in {dest_city["title"]}: *** {dest_city["forecast"][0]["weather_state_name"].upper()} ***')
 
