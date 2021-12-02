@@ -7,7 +7,7 @@ path = path.join(dirpath, filename)
 
 def get_data():
     try:
-        with open(path, encoding='utf-8') as file:
+        with open(path) as file:
             data = json.load(file)
     except Exception:
         print(f'Error: Unable to Read {filename}')
@@ -18,7 +18,7 @@ def get_data():
 
 def write_data(data, message=False):
     try:
-        with open(path, 'w', encoding='utf-8') as file:
+        with open(path, 'w') as file:
             if message:
                 print(f'Writing to {file}...', end=' ')
             json.dump(data, file, indent=4)
