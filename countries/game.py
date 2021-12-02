@@ -51,7 +51,7 @@ def export_flag_image(country, path=None):
         path = get_path()
         
     try:
-        # Using flag
+        # Using flag <--
         """country = get_country(country, full=True)
         filename =  filename = f'{country["name"]["common"].lower()}.svg'"""
 
@@ -59,7 +59,7 @@ def export_flag_image(country, path=None):
         filepath = os.path.join(path, filename)
         # If flag not saved yet
         if not os.path.exists(filepath):
-            # Using flag
+            # Using flag <--
             """with open(filepath, 'wb') as file:
                     file.write(country['flag'].encode())
             print(f'Flag saved in {filepath}')"""
@@ -71,8 +71,7 @@ def export_flag_image(country, path=None):
                 print(f'Flag saved in {filepath}')
         else:
             print(f'Flag already saved in {filepath}')
-    except Exception as e:
-        print(e)
+    except Exception:
         print('Missing country flag!')
         
         
@@ -138,12 +137,15 @@ def option_questions_generator(countries, search_paths, track, size=3,):
     
     if search in track:
         return None
-    else:
-        track.append(search)
+    
+    track.append(search)
         
     option_menu(subjects, answer, search_path)  
     try:
         user = int(input(': '))
+        if user <= 0:
+            raise IndexError
+        
         subject = subjects[user - 1]
     except Exception:
         print('Invalid input')
@@ -153,21 +155,16 @@ def option_questions_generator(countries, search_paths, track, size=3,):
 
 def max_min_question_generator(region, search_paths, track):
     search_path = random.choice(search_paths)
-    maximum = random.choice((True, False))
-    search = (search_path, maximum)
+    func, verb = (max, 'biggest') if random.choice((True, False)) else (min, 'smallest')
+    search = (search_path, func)
 
     if search in track:
         return None
-    else:
-        track.append(search)
-        
-        verb = 'biggest' if maximum else 'smallest'
-        subject = input(f'Country with {verb} {search_path[0]}: ').lower()
-        
-        if maximum:
-            return subject == max(region, key=lambda x: get_value(x, search_path))['name']['common'].lower() 
-        else:
-            return subject == min(region, key=lambda x: get_value(x, search_path))['name']['common'].lower()
+    
+    track.append(search)
+    subject = input(f'Country with {verb} {search_path[0]}: ').lower()
+
+    return subject == func(region, key=lambda x: get_value(x, search_path))['name']['common'].lower() 
 
 
 while True:
@@ -227,9 +224,10 @@ while True:
                 is_ok = question(region, search_paths, track)
                 if is_ok == None:
                     continue
-                print_answer_success(is_ok)
-                if is_ok:
+                elif is_ok:
                     success +=1
+                    
+                print_answer_success(is_ok)
                 iterations += 1
             
             print(f'{success} correct answers, {success / num_of_questions * 100:.1f}% assertions')
