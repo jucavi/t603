@@ -9,15 +9,15 @@ class Pokemon:
     
     def __init__(self, name, element, hp):
         self.name = name
-        self._HP = hp
-        self.hp = hp
+        self._HP = float(hp)
+        self.hp = float(hp)
         self.element = element
         self.attacks = []
     
     def health(self):
         return self.hp
     
-    def HealthPoints(self):
+    def HPts(self):
         return self._HP
     
     def learn(self, attack):
@@ -39,6 +39,7 @@ class Pokemon:
             
         if self.health() > self._HP or not heal:
             self.hp = self._HP
+        return self
     
     def __repr__(self):
         return f'{self.__class__.__name__}({self.name}, {self.element}, {self.health()}, {self.attacks})'
@@ -72,11 +73,16 @@ class Screen:
     def __init__(self):
         pass
     
-    def health_bar(pokemon, size=25):
-        steep = int(pokemon.HealthPoints() / size)
-        amount = '=' * int((pokemon.health() / steep))
+    def health_bar(pokemon, size=25, fill='='):
+        steep = int(pokemon.HPts() / size)
+        center = round(size / 2)
+        size_health = round(len(list(str(pokemon.HPts()))))
+        char_amount = int(pokemon.health() / steep - size_health)
+        half_side = center - int(size_health / 2)
+        right = fill * int(char_amount - half_side) if char_amount - half_side > 0 else ' '
+        left = fill * char_amount if char_amount <= half_side else fill * half_side
         
-        return f'[{amount.ljust(size)}]'
+        return f'[{left.ljust(half_side)}{str(pokemon.health()).center(size_health)}{right.ljust(half_side)}]'
     
     
 os.system('clear')
@@ -92,7 +98,7 @@ waterdragon.learn(water_gun)
 charmander.learn(flamethrower)
 
 while True:
-    pokemons = [waterdragon, charmander]
+    pokemons = [waterdragon.recover(), charmander.recover()]
     random.shuffle(pokemons)
     print('[1] ?????')
     print('[2] ?????')
