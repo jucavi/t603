@@ -20,7 +20,7 @@ class Pokemon:
     def health(self):
         return self.hp
     
-    def HPts(self):
+    def HPpts(self):
         return self._HP
     
     def learn(self, attack):
@@ -95,9 +95,9 @@ class Screen:
         return name_length, bar_length, in_between_length
          
     def health_bar(self, pokemon, bar_length, fill='='):
-        health_length = len(str(pokemon.HPts()))
+        health_length = len(str(pokemon.HPpts()))
         max_fill = int((bar_length - health_length - 3) / 2) # -3 chars from '[/]'
-        steep = int(pokemon.HPts() / (bar_length - (health_length * 2)))
+        steep = int(pokemon.HPpts() / (bar_length - (health_length * 2)))
         fill_with = ceil(pokemon.health() / steep) # remove exrea fill right side
         
         if fill_with >= max_fill:
@@ -111,7 +111,7 @@ class Screen:
         
         left_fill = fill * fill_with 
         left = f'{left_fill:{max_fill}}{health}'
-        right = f'{pokemon.HPts()}{right_fill:{max_fill}}'
+        right = f'{pokemon.HPpts()}{right_fill:{max_fill}}'
  
         return f'[{left}/{right}]'
  
