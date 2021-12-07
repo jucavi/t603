@@ -8,7 +8,7 @@ import sys
 
 class Pokemon:
     # _elements_weakness = {'fire': ['water'], 'grass': ['fire'], 'water': ['grass']}
-    
+
     def __init__(self, name, element, hp, attack, defense):
         self.name = name
         self.element = element
@@ -19,7 +19,7 @@ class Pokemon:
         self.moves = []
         self.level = 1
         self.damg_relation = {}
-    
+
     def dammage(self, other, attack):
         targets = 1
         weather = 1
@@ -38,45 +38,44 @@ class Pokemon:
 
     def HPpts(self):
         return self._HP
-    
+
     def learn(self, attack):
         self.moves.append(attack)
-        
+
     def charge(self,  other, attack):
         boost = 1.5 if other._is_weak(attack) else 1
         other.hp -= attack.power * boost
         if other.hp < 0:
             other.hp = 0.0
-            
+
     def is_alive(self):
         return self.health() > 0
-    
+
     def _is_weak(self, attack):
         return attack.element in Pokemon._elements_weakness[self.element]
-    
+
     def recover(self, heal=None):
         if heal:
             self.hp += heal
-            
+
         if self.health() > self._HP or not heal:
             self.hp = self._HP
         return self
     
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.name}, {self.element}, {self.health()}, {self.attacks})'
+        return f'{self.__class__.__name__}({self.name}, {self.element}, {self.health()}, {self.moves})'
 
 
 class Attack:
-    def __init__(self, name, element, damage):
+    def __init__(self, name, element, power):
         self.name = name
-        self.element = element
-        self.damage = damage
-        # self.power
+        self.element = element # no veo donde
+        self.power = power
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.name}, {self.element}, {self.damage})'
+        return f'{self.__class__.__name__}({self.name}, {self.element}, {self.power})'
 
-   
+
 class Pokemons:
     def __init__(self, limit=10):
         self.pokemons = []
@@ -97,27 +96,27 @@ class Screen:
         self.screen_size = screen_size
         self.name_length = name_length
         self.bar_length, self.in_between_length = self._space_constrains()
-        
+
     def _space_constrains(self):
         div = 4
         base_space = int(self.screen_size - (self.name_length * 2))
         bar_length = int((base_space * (div - 1) / div) / 2)
         in_between_length = int(base_space * 1 / div)
-        
+
         if bar_length % 2 == 0: 
             bar_length += 1
-        
+
         if in_between_length % 2 != 0:
             in_between_length += 1 
-        
+
         return bar_length, in_between_length
-         
+
     def health_bar(self, pokemon, fill='='):
         health_length = len(str(pokemon.HPpts()))
         max_fill = int((self.bar_length - health_length - 3) / 2) # -3 chars from '[ / ]'
         steep = int(pokemon.HPpts() / (self.bar_length - (health_length * 2)))
         fill_with = ceil(pokemon.health() / steep)
-        
+
         if fill_with >= max_fill:
             right_fill = fill * (fill_with - max_fill)
             fill_with = max_fill
@@ -125,21 +124,21 @@ class Screen:
         else:
             right_fill = ''
             health = f'{pokemon.health():>{health_length}}'
-        
-        
+
+
         left_fill = fill * fill_with 
         left = f'{left_fill:{max_fill}}{health}'
         right = f'{pokemon.HPpts()}{right_fill:{max_fill}}'
- 
+
         return f'[{left}/{right}]'
- 
+
     def header(self, poke1, poke2, fill='-'):
         vs = "'VS'"
         poke1_repr = f'{poke1.name.capitalize():{self.name_length}} {self.health_bar(poke1)}'
         poke2_repr = f'{poke2.name.capitalize():{self.name_length}} {self.health_bar(poke2)}'
         head = f'{poke1_repr}{vs:^{self.in_between_length}}{poke2_repr}'
         self.screen_size = len(head)
-        
+
         system('clear')
         print(
 f"""
@@ -151,7 +150,7 @@ f"""
     # TODO  
     # position center, right, left
     # message printed left to right, right to left
-       
+
     def fancy_message(self, message, delay=0.35):
         # message = f'{pokemon.name} wins!!!!'.upper()
         message_len = len(message)
@@ -159,7 +158,7 @@ f"""
             print(f'{chunk:>{int(self.screen_size / 2) + int(message_len / 2)}}', end='\r', flush=True)
             sleep(delay)
         print()
-        
+
     def orderly_turn(self, pokemon, home=False):
         spaces = int((self.screen_size / 2) + int(self.in_between_length) / 2) if home else 0
         for i, attack in enumerate(pokemon.moves, start=1):
@@ -173,10 +172,10 @@ if __name__ == '__main__':
         screen_size = int(sys.argv[1])
     except:
         screen_size = None  
-    
+
     screen_size = screen_size or 100
     screen = Screen(screen_size)
-    
+
     system('clear')
 
     waterdragon = Pokemon('Waterdragon', 'grass', 183, 25, 20)
@@ -210,7 +209,7 @@ if __name__ == '__main__':
                 screen.header(IA_pokemon, user_pokemon)
             else:
                 screen.header(user_pokemon, IA_pokemon)
-                
+
             if time_attack:
                 screen.orderly_turn(user_pokemon, user_right_side)
                 index = int(input('Choose: '))
@@ -230,16 +229,16 @@ if __name__ == '__main__':
             sleep(1.3)
 
         system('clear')
-        
+
         screen.header(user_pokemon, IA_pokemon)    
         winner = IA_pokemon if IA_pokemon.is_alive() else user_pokemon
         message = f'{winner.name} wins!!!!'.upper()
         screen.fancy_message(message)
-        
+
         repeat = input('Another Battle (y/n)? :')
         if repeat.lower() == 'n':
             break
- 
+
 # pokemons = Pokemons(elemnts, 150)
 # pokemons.load()
 # print(pokemons.pokemons)
