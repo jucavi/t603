@@ -10,6 +10,7 @@ class Pokemon:
     # _elements_weakness = {'fire': ['water'], 'grass': ['fire'], 'water': ['grass']}
 
     def __init__(self, name, element, hp, attack, defense):
+        self.level = 1
         self.name = name
         self.element = element
         self._HP = float(hp)
@@ -17,22 +18,28 @@ class Pokemon:
         self.attack = attack
         self.defense = defense
         self.moves = []
-        self.level = 1
-        self.damg_relation = {}
+        self.dmg_relation = []
+        
+    def effectiveness(self, other):
+        relation = filter(lambda relation: other.element in relation.values, self.dmg_relation)
+        try:
+            return list(next(relation).keys())[0]
+        except:
+            return 1
 
-    def dammage(self, other, attack):
+    def damage(self, other, attack):
         targets = 1
         weather = 1
         badge = 1
         critical = 1
         STAB = 1
         burn = 1
-        other = 1
-        rand = random.uniform(217, 255)
-        efectiveness = None #TODO 0 efective
-
-        return (((((2 * self.level) / 5 + 2) * attack.power * self.attack / other.defense) / 50) + 2) * targets * weather * badge * critical * STAB * efectiveness * burn * other
+        rand = random.uniform(.65, 1)
+        effectiveness = self.effectiveness(other)
         
+        return (((((2 * self.level) / 5 + 2) * attack.power * self.attack / other.defense) / 50) + 2) * targets * weather * badge * critical * rand * STAB * effectiveness * burn
+
+
     def health(self):
         return self.hp
 
