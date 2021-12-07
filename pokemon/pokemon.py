@@ -7,8 +7,6 @@ import sys
 
 
 class Pokemon:
-    # _elements_weakness = {'fire': ['water'], 'grass': ['fire'], 'water': ['grass']}
-
     def __init__(self, name, element, hp, attack, defense):
         self.level = 1
         self.name = name
@@ -19,7 +17,7 @@ class Pokemon:
         self.defense = defense
         self.moves = []
         self.dmg_relation = []
-        
+
     def effectiveness(self, other):
         relation = filter(lambda relation: other.element in relation.values, self.dmg_relation)
         try:
@@ -50,16 +48,13 @@ class Pokemon:
         self.moves.append(attack)
 
     def charge(self,  other, attack):
-        boost = 1.5 if other._is_weak(attack) else 1
-        other.hp -= attack.power * boost
+        other.hp -= self.damage(other, attack)
+        other.hp = round(other.hp, 1)
         if other.hp < 0:
             other.hp = 0.0
 
     def is_alive(self):
         return self.health() > 0
-
-    def _is_weak(self, attack):
-        return attack.element in Pokemon._elements_weakness[self.element]
 
     def recover(self, heal=None):
         if heal:
