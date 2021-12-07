@@ -77,12 +77,14 @@ class Pokemons:
 
 
 class Screen:
-    def __init__(self, screen_size):
+    def __init__(self, screen_size=100, name_length=12):
         self.screen_size = screen_size
+        self.name_length = name_length
+        self.bar_length, self.in_between_length = self._space_constrains()
         
-    def _space_constrains(self, name_length=12):
+    def _space_constrains(self):
         div = 4
-        base_space = int(self.screen_size - (name_length * 2))
+        base_space = int(self.screen_size - (self.name_length * 2))
         bar_length = int((base_space * (div - 1) / div) / 2)
         in_between_length = int(base_space * 1 / div)
         
@@ -92,13 +94,13 @@ class Screen:
         if in_between_length % 2 != 0:
             in_between_length += 1 
         
-        return name_length, bar_length, in_between_length
+        return bar_length, in_between_length
          
-    def health_bar(self, pokemon, bar_length, fill='='):
+    def health_bar(self, pokemon, fill='='):
         health_length = len(str(pokemon.HPpts()))
-        max_fill = int((bar_length - health_length - 3) / 2) # -3 chars from '[/]'
-        steep = int(pokemon.HPpts() / (bar_length - (health_length * 2)))
-        fill_with = ceil(pokemon.health() / steep) # remove exrea fill right side
+        max_fill = int((self.bar_length - health_length - 3) / 2) # -3 chars from '[ / ]'
+        steep = int(pokemon.HPpts() / (self.bar_length - (health_length * 2)))
+        fill_with = ceil(pokemon.health() / steep)
         
         if fill_with >= max_fill:
             right_fill = fill * (fill_with - max_fill)
@@ -117,32 +119,35 @@ class Screen:
  
     def header(self, poke1, poke2, fill='-'):
         vs = "'VS'"
-        name_length, bar_length, in_between_length = self._space_constrains()
-        poke1_repr = f'{poke1.name.capitalize():{name_length}} {self.health_bar(poke1, bar_length)}'
-        poke2_repr = f'{poke2.name.capitalize():{name_length}} {self.health_bar(poke2, bar_length)}'
-        head = f'{poke1_repr}{vs:^{in_between_length}}{poke2_repr}'
-        total_length = len(head)
+        poke1_repr = f'{poke1.name.capitalize():{self.name_length}} {self.health_bar(poke1)}'
+        poke2_repr = f'{poke2.name.capitalize():{self.name_length}} {self.health_bar(poke2)}'
+        head = f'{poke1_repr}{vs:^{self.in_between_length}}{poke2_repr}'
+        self.screen_size = len(head)
         
         system('clear')
         print(
 f"""
-{fill * total_length}
+{fill * self.screen_size}
 {head}
-{fill * total_length}
+{fill * self.screen_size}
 """)
-        
-    def winner(self, pokemon, delay=0.35):
-        message = f'{pokemon.name} wins!!!!'.upper()
+
+    # TODO  
+    # position center, right, left
+    # message printed left to right, right to left
+       
+    def fancy_message(self, message, delay=0.35):
+        # message = f'{pokemon.name} wins!!!!'.upper()
         message_len = len(message)
         for chunk in (message[:i] for i, _ in enumerate(message)):
             print(f'{chunk:>{int(self.screen_size / 2) + int(message_len / 2)}}', end='\r', flush=True)
             sleep(delay)
         print()
         
-    def round(self, pokemon, rigth=False):
-        spaces = int(self.screen_size * 5 / 8) if rigth else 0
-        for i, attack in enumerate(pokemon.attacks, start=1): 
-            print(f'{" ":>{spaces}}[{i}.] {attack.name}')
+    def orderly_turn(self, pokemon, home=False):
+        spaces = int((self.screen_size / 2) + int(self.in_between_length) / 2) if home else 0
+        for i, attack in enumerate(pokemon.moves, start=1):
+            print(f'{"":>{spaces}}[{i}.] {attack.name}')
 
 
 
