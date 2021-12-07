@@ -7,28 +7,44 @@ import sys
 
 
 class Pokemon:
-    _weakness = {'fire': ['water'], 'grass': ['fire'], 'water': ['grass']}
+    # _elements_weakness = {'fire': ['water'], 'grass': ['fire'], 'water': ['grass']}
     
-    def __init__(self, name, element, hp):
+    def __init__(self, name, element, hp, attack, defense):
         self.name = name
+        self.element = element
         self._HP = float(hp)
         self.hp = float(hp)
-        self.element = element
-        # self.attack = attack
-        self.attacks = []
+        self.attack = attack
+        self.defense = defense
+        self.moves = []
+        self.level = 1
+        self.damg_relation = {}
     
+    def dammage(self, other, attack):
+        targets = 1
+        weather = 1
+        badge = 1
+        critical = 1
+        STAB = 1
+        burn = 1
+        other = 1
+        rand = random.uniform(217, 255)
+        efectiveness = None #TODO 0 efective
+
+        return (((((2 * self.level) / 5 + 2) * attack.power * self.attack / other.defense) / 50) + 2) * targets * weather * badge * critical * STAB * efectiveness * burn * other
+        
     def health(self):
         return self.hp
-    
+
     def HPpts(self):
         return self._HP
     
     def learn(self, attack):
-        self.attacks.append(attack)
+        self.moves.append(attack)
         
     def charge(self,  other, attack):
-        boost = 1.5 if other._is_weak(attack) else 1      
-        other.hp -= attack.damage * boost
+        boost = 1.5 if other._is_weak(attack) else 1
+        other.hp -= attack.power * boost
         if other.hp < 0:
             other.hp = 0.0
             
@@ -36,7 +52,7 @@ class Pokemon:
         return self.health() > 0
     
     def _is_weak(self, attack):
-        return attack.element in Pokemon._weakness[self.element]
+        return attack.element in Pokemon._elements_weakness[self.element]
     
     def recover(self, heal=None):
         if heal:
@@ -163,8 +179,8 @@ if __name__ == '__main__':
     
     system('clear')
 
-    waterdragon = Pokemon('Waterdragon', 'grass', 183)
-    charmander = Pokemon('Charmander', 'fire', 180)
+    waterdragon = Pokemon('Waterdragon', 'grass', 183, 25, 20)
+    charmander = Pokemon('Charmander', 'fire', 180, 25, 20)
 
     flamethrower = Attack("Flamethrower", 'fire', 25)
     water_gun = Attack("Tackle", 'water', 20)
@@ -196,15 +212,15 @@ if __name__ == '__main__':
                 screen.header(user_pokemon, IA_pokemon)
                 
             if time_attack:
-                screen.round(user_pokemon, user_right_side)
+                screen.orderly_turn(user_pokemon, user_right_side)
                 index = int(input('Choose: '))
-                attack = user_pokemon.attacks[index - 1]
+                attack = user_pokemon.moves[index - 1]
                 print(f'{user_pokemon.name} attack with {attack.name}')
                 damage = user_pokemon.charge(IA_pokemon, attack)
                 print(f'{IA_pokemon.name} recive {damage} damage points')
             else:
-                screen.round(IA_pokemon, IA_right_side)
-                attack = random.choice(IA_pokemon.attacks)
+                screen.orderly_turn(IA_pokemon, IA_right_side)
+                attack = random.choice(IA_pokemon.moves)
                 print(f'{IA_pokemon.name} attack with {attack.name}')
                 damage = IA_pokemon.charge(user_pokemon, attack)
                 print(f'{user_pokemon.name} recive {damage} damage points')
@@ -217,7 +233,8 @@ if __name__ == '__main__':
         
         screen.header(user_pokemon, IA_pokemon)    
         winner = IA_pokemon if IA_pokemon.is_alive() else user_pokemon
-        screen.winner(winner)
+        message = f'{winner.name} wins!!!!'.upper()
+        screen.fancy_message(message)
         
         repeat = input('Another Battle (y/n)? :')
         if repeat.lower() == 'n':
