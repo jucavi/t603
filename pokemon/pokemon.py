@@ -159,13 +159,15 @@ class Screen:
 
     def health_bar(self, pokemon, fill='='):
         health_length = len(str(pokemon.HPpts()))
-        max_fill = int((self.bar_length - health_length - 3) / 2) # -3 chars from '[ / ]'
-        steep = int(pokemon.HPpts() / (self.bar_length - (health_length * 2)))
+        max_fill = int((self.bar_length - (health_length * 2) - 3)) # -3 chars from '[ / ]'
+        side_fill = int(max_fill / 2)
+        steep = pokemon.HPpts() / max_fill
         fill_with = ceil(pokemon.health() / steep)
+        fill_with = max_fill if fill_with > max_fill else fill_with
 
-        if fill_with >= max_fill:
-            right_fill = fill * (fill_with - max_fill)
-            fill_with = max_fill
+        if fill_with >= side_fill:
+            right_fill = fill * (fill_with - side_fill)
+            fill_with = side_fill
             health = f'{pokemon.health():=>{health_length}}'
         else:
             right_fill = ''
@@ -173,8 +175,8 @@ class Screen:
 
 
         left_fill = fill * fill_with 
-        left = f'{left_fill:{max_fill}}{health}'
-        right = f'{pokemon.HPpts()}{right_fill:{max_fill}}'
+        left = f'{left_fill:{side_fill}}{health}'
+        right = f'{pokemon.HPpts()}{right_fill:{side_fill}}'
 
         return f'[{left}/{right}]'
 
@@ -197,16 +199,19 @@ f"""
     # position center, right, left
     # message printed left to right, right to left
 
-    def fancy_message(self, message, delay=0.35):
-        # message = f'{pokemon.name} wins!!!!'.upper()
+    def fancy_message(self, message, left_direction=True, delay=0.35):
         message_len = len(message)
-        for chunk in (message[:i] for i, _ in enumerate(message)):
-            print(f'{chunk:>{int(self.screen_size / 2) + int(message_len / 2)}}', end='\r', flush=True)
-            sleep(delay)
-        print()
+        if left_direction:
+            for chunk in (message[:i] for i, _ in enumerate(message)):
+                print(f'{chunk:>{int(self.screen_size / 2) + int(message_len / 2)}}', end='\r', flush=True)
+                sleep(delay)
+        else:
+            for letter in message:
+                print(f'{letter:>{int(self.screen_size / 2) - int(message_len / 2)}}', end='', flush=True)
+                sleep(delay)
 
-    def orderly_turn(self, pokemon, home=False):
-        spaces = int((self.screen_size / 2) + int(self.in_between_length) / 2) if home else 0
+    def moves_display(self, pokemon, home=False):
+        spaces =  0 if home else int((self.screen_size / 2) + int(self.in_between_length) / 2)
         for i, attack in enumerate(pokemon.moves, start=1):
             print(f'{"":>{spaces}}[{i}.] {attack.name}')
 
