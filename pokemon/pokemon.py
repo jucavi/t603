@@ -7,7 +7,7 @@ import sys
 
 
 class Pokemon:
-    def __init__(self, name, element, hp, attack, defense):
+    def __init__(self, name, element, hp, attack, defense, moves=None, dmg_relation=None):
         self.level = 1
         self.name = name
         self.element = element
@@ -15,11 +15,11 @@ class Pokemon:
         self.hp = float(hp)
         self.attack = attack
         self.defense = defense
-        self.moves = []
-        self.dmg_relation = []
+        self.moves = moves or []
+        self._dmg_relation = dmg_relation or []
 
     def effectiveness(self, other):
-        relation = filter(lambda relation: other.element in relation.values, self.dmg_relation)
+        relation = filter(lambda relation: other.element in relation.values, self._dmg_relation)
         try:
             return list(next(relation).keys())[0]
         except:
@@ -36,7 +36,6 @@ class Pokemon:
         effectiveness = self.effectiveness(other)
         
         return (((((2 * self.level) / 5 + 2) * attack.power * self.attack / other.defense) / 50) + 2) * targets * weather * badge * critical * rand * STAB * effectiveness * burn
-
 
     def health(self):
         return self.hp
@@ -65,32 +64,77 @@ class Pokemon:
         return self
     
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.name}, {self.element}, {self.health()}, {self.moves})'
+        return f'{self.__class__.__name__}({self.name}, {self.element}, {self.health()}, {self.attack}, {self.defense}, {self.moves}, {self._dmg_relation})'
 
 
 class Attack:
-    def __init__(self, name, element, power):
+    def __init__(self, name, dammage_class, power):
         self.name = name
-        self.element = element # no veo donde
+        self.dammage_class = dammage_class
         self.power = power
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.name}, {self.element}, {self.power})'
+        return f'{self.__class__.__name__}({self.name}, {self.dammage_class}, {self.power})'
 
 
-class Pokemons:
-    def __init__(self, limit=10):
-        self.pokemons = []
-        self.limit = limit
-        self.URL = 'https://pokeapi.co/api/v2'
+class PokeGenerator:
+    def __init__(self, pokemon_limit=10, moves_limit=5):
+        self._pokemon_limit = pokemon_limit
+        self._moves_limit = moves_limit
+        self._URL = 'https://pokeapi.co/api/v2'
+        self.pokemons = self._poke_generator()
 
-    def load(self):
-        res = requests.get(f'{self.URL}/pokemon/?limit={self.limit}')
+    def _load(self):
+        res = requests.get(f'{self._URL}/pokemon/?limit={self._pokemon_limit}')
 
         if res.ok:
             res = res.json()
             return res['results']
         return []
+    
+    def _pokemon(self, result):
+        res = requests.get(result['url'])
+        
+        if res.ok:
+            res = res.json()
+            name = res['name']
+            element = res['types'][0]['type']['name'] # TODO mixed types!!! only gets one
+            hp = res['stats'][0]['base_stat']
+            attack = res['stats'][1]['base_stat']
+            defense = res['stats'][2]['base_stat']
+            raw_moves = res['moves'][:self._moves_limit] # Only moves_limit moves
+            moves = self._parse_moves(raw_moves)
+            dmg_effectiveness = self._parse_effectiveness(f'{self._URL}/type/{element}')
+            return Pokemon(name, element, hp, attack, defense, moves, dmg_effectiveness)
+    
+    def _parse_effectiveness(self, url):
+        efectiveness_list = []
+        res =  requests.get(url)
+        if res.ok:
+            translator = {'double_damage_to': 2, 'half_damage_to': 0.5, 'no_damage_to': 0}
+            res = res.json()
+            for key, key_value in translator.items():
+                elements_dict = res['damage_relations'].get(key, [])
+                if elements_dict:
+                    elements = [element['name'] for element in elements_dict]
+                    efectiveness_list.append({key_value: elements})
+
+        return efectiveness_list
+    
+    def _parse_moves(self, raw_moves):
+        moves = []
+        urls = (move['move']['url']for move in raw_moves)
+        for url in urls:
+            res = requests.get(url)
+            if res.ok:
+                res = res.json()
+                if res['power']:
+                    moves.append(Attack(res['name'], res['damage_class']['name'], res['power']))
+        return moves
+    
+    def _poke_generator(self):
+        results = self._load()
+        return (self._pokemon(result) for result in results)        
 
 
 class Screen:
