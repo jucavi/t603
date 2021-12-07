@@ -219,78 +219,71 @@ f"""
 
 
 if __name__ == '__main__':
-    # try:
-    #     screen_size = int(sys.argv[1])
-    # except:
-    #     screen_size = None
+    try:
+        screen_size = int(sys.argv[1])
+        screen = Screen(screen_size)
+    except:
+        screen = Screen()
 
-    # screen_size = screen_size or 100
-    # screen = Screen(screen_size)
+    system('clear')
 
-    # system('clear')
+    print('Genearting pokemons...')
+    pokemons = list(PokeGenerator(pokemon_limit=6).pokemons)
 
-    # waterdragon = Pokemon('Waterdragon', 'grass', 183, 25, 20)
-    # charmander = Pokemon('Charmander', 'fire', 180, 25, 20)
+    while True:
+        pokes = [pokemon.recover() for pokemon in pokemons]
+        for i, p in enumerate(pokes, start=1):
+            print(f'[{i}] {p.name.capitalize()}')
 
-    # flamethrower = Attack("Flamethrower", 'fire', 25)
-    # water_gun = Attack("Tackle", 'water', 20)
-    # razor_leaf = Attack("Razor leaf", 'grass', 20)
+        while True:
+            try:
+                user = int(input('Pokemon: '))
+                if 0 <= user <= len(pokes):
+                    user_pokemon = pokes.pop(user - 1)
+                    break
+            except KeyboardInterrupt:
+                exit(1)
 
-    # waterdragon.learn(water_gun)
-    # charmander.learn(flamethrower)
+        IA_pokemon = random.choice(pokes)
 
+        turn = random.choice((True, False))
+        home = turn
 
-    # while True:
-    #     pokemons = [waterdragon.recover(), charmander.recover()]
-    #     random.shuffle(pokemons)
-    #     print('[1] ?????')
-    #     print('[2] ?????')
-    #     user = int(input('Pokemon: '))
-    #     user_pokemon = pokemons.pop(user - 1)
-    #     IA_pokemon = pokemons.pop()
+        while user_pokemon.is_alive() and IA_pokemon.is_alive():
+            pokemon, vs_pokemon = (user_pokemon, IA_pokemon) if turn else (IA_pokemon, user_pokemon)
 
-    #     time_attack = random.choice((True, False))
-    #     user_right_side = not time_attack
-    #     IA_right_side = time_attack
+            if home:
+               screen.header(user_pokemon, IA_pokemon)
+            else:
+                screen.header(IA_pokemon, user_pokemon)
 
-    #     while user_pokemon.is_alive() and IA_pokemon.is_alive():
-    #         system('clear')
+            screen.moves_display(pokemon, home=turn)
             
-    #         if user_right_side:
-    #             screen.header(IA_pokemon, user_pokemon)
-    #         else:
-    #             screen.header(user_pokemon, IA_pokemon)
+            if turn:
+                while True:
+                    try:
+                        index = int(input('Choose: '))
+                        if 0 <= index <= len(pokemon.moves):
+                            attack = pokemon.moves[index - 1]
+                            break
+                    except KeyboardInterrupt:
+                        exit(1)
+            else:
+                attack =  random.choice(pokemon.moves)
 
-    #         if time_attack:
-    #             screen.orderly_turn(user_pokemon, user_right_side)
-    #             index = int(input('Choose: '))
-    #             attack = user_pokemon.moves[index - 1]
-    #             print(f'{user_pokemon.name} attack with {attack.name}')
-    #             damage = user_pokemon.charge(IA_pokemon, attack)
-    #             print(f'{IA_pokemon.name} recive {damage} damage points')
-    #         else:
-    #             screen.orderly_turn(IA_pokemon, IA_right_side)
-    #             attack = random.choice(IA_pokemon.moves)
-    #             print(f'{IA_pokemon.name} attack with {attack.name}')
-    #             damage = IA_pokemon.charge(user_pokemon, attack)
-    #             print(f'{user_pokemon.name} recive {damage} damage points')
-    #             sleep(0.5)
+            print(f'{pokemon.name} attack with {attack.name}')
+            pokemon.charge(vs_pokemon, attack)
 
-    #         time_attack = not time_attack
-    #         sleep(1.3)
+            if not turn:
+                sleep(1)
 
-    #     system('clear')
+            turn = not turn
+            sleep(1.3)
 
-    #     screen.header(user_pokemon, IA_pokemon)
-    #     winner = IA_pokemon if IA_pokemon.is_alive() else user_pokemon
-    #     message = f'{winner.name} wins!!!!'.upper()
-    #     screen.fancy_message(message)
+        winner = IA_pokemon if IA_pokemon.is_alive() else user_pokemon
+        message = f'{winner.name} wins!!!!'.upper()
+        screen.fancy_message(message)
 
-    #     repeat = input('Another Battle (y/n)? :')
-    #     if repeat.lower() == 'n':
-    #         break
-
-    pokemons = PokeGenerator(pokemon_limit=3).pokemons
-
-    for pokemon in pokemons:
-        print(pokemon, '\n')
+        repeat = input('Another Battle (y/n)? :')
+        if repeat.lower() == 'n':
+            break
