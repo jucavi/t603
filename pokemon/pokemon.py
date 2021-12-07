@@ -35,7 +35,7 @@ class Pokemon:
         rand = random.uniform(.65, 1)
         effectiveness = self.effectiveness(other)
         
-        return (((((2 * self.level) / 5 + 2) * attack.power * self.attack / other.defense) / 50) + 2) * targets * weather * badge * critical * rand * STAB * effectiveness * burn
+        return ((((2 * self.level / 5 + 2) * attack.power * self.attack / other.defense) / 50) + 2) * targets * weather * badge * critical * rand * STAB * effectiveness * burn
 
     def health(self):
         return self.hp
@@ -188,34 +188,47 @@ class Screen:
         self.screen_size = len(head)
 
         system('clear')
-        print(
-f"""
-{fill * self.screen_size}
-{head}
-{fill * self.screen_size}
-""")
+        print(f"{fill * self.screen_size}\n{head}\n{fill * self.screen_size}")
 
     # TODO  
     # position center, right, left
     # message printed left to right, right to left
 
-    def fancy_message(self, message, left_direction=True, delay=0.35):
+    def fancy_message(self, message, left_to_right=False, position='center', delay=0.35):
         message_len = len(message)
-        if left_direction:
-            for chunk in (message[:i] for i, _ in enumerate(message)):
-                print(f'{chunk:>{int(self.screen_size / 2) + int(message_len / 2)}}', end='\r', flush=True)
-                sleep(delay)
+        if position == 'center':
+            start = int(self.screen_size / 2)
+        elif position == 'left':
+            start = 0
+        elif position == 'right':
+            start = int((self.screen_size / 2) + int(self.in_between_length) / 2)
+        
+        if position == 'center':
+            if left_to_right:
+                for chunk in (message[:i] for i, _ in enumerate(message, start=1)):
+                    print(f'{"":>{start - int(message_len / 2)}}{chunk}', end='\r', flush=True)
+                    sleep(delay)
+            else:
+                for chunk in (message[:i] for i, _ in enumerate(message, start=1)):
+                    print(f'{chunk:>{start + int(message_len / 2)}}', end='\r', flush=True)
+                    sleep(delay)
         else:
-            for letter in message:
-                print(f'{letter:>{int(self.screen_size / 2) - int(message_len / 2)}}', end='', flush=True)
-                sleep(delay)
+            if left_to_right:
+                for chunk in (message[:i] for i, _ in enumerate(message, start=1)):
+                    print(f'{"":>{start}}{chunk}', end='\r', flush=True)
+                    sleep(delay)
+            else:
+                for chunk in (message[:i] for i, _ in enumerate(message, start=1)):
+                    print(f'{chunk:>{start + message_len}}', end='\r', flush=True)
+                    sleep(delay)
+                    
+        print()
 
     def moves_display(self, pokemon, home=False):
         spaces =  0 if home else int((self.screen_size / 2) + int(self.in_between_length) / 2)
         for i, attack in enumerate(pokemon.moves, start=1):
             print(f'{"":>{spaces}}[{i}.] {attack.name}')
-
-
+            
 
 
 if __name__ == '__main__':
@@ -243,19 +256,20 @@ if __name__ == '__main__':
                     break
             except KeyboardInterrupt:
                 exit(1)
+            except:
+                continue
 
         IA_pokemon = random.choice(pokes)
 
         turn = random.choice((True, False))
-        home = turn
 
         while user_pokemon.is_alive() and IA_pokemon.is_alive():
             pokemon, vs_pokemon = (user_pokemon, IA_pokemon) if turn else (IA_pokemon, user_pokemon)
 
-            if home:
-               screen.header(user_pokemon, IA_pokemon)
+            if turn:
+               screen.header(pokemon, vs_pokemon)
             else:
-                screen.header(IA_pokemon, user_pokemon)
+                screen.header(vs_pokemon, pokemon)
 
             screen.moves_display(pokemon, home=turn)
             
@@ -268,21 +282,31 @@ if __name__ == '__main__':
                             break
                     except KeyboardInterrupt:
                         exit(1)
+                    except:
+                        continue
             else:
                 attack =  random.choice(pokemon.moves)
 
-            print(f'{pokemon.name} attack with {attack.name}')
+            position = 'left' if turn else 'right'
+            message = f'{pokemon.name.capitalize()} attacks with {attack.name.capitalize()}'
+            screen.fancy_message(message, left_to_right=True, position=position, delay=0.1)
             pokemon.charge(vs_pokemon, attack)
 
-            if not turn:
-                sleep(1)
+            # if not turn:
+            #     sleep(1)
 
             turn = not turn
             sleep(1.3)
 
+        system('clear')
+        if not turn:
+            screen.header(pokemon, vs_pokemon)
+        else:
+            screen.header(vs_pokemon, pokemon)
+            
         winner = IA_pokemon if IA_pokemon.is_alive() else user_pokemon
         message = f'{winner.name} wins!!!!'.upper()
-        screen.fancy_message(message)
+        screen.fancy_message(message, position='center')
 
         repeat = input('Another Battle (y/n)? :')
         if repeat.lower() == 'n':
