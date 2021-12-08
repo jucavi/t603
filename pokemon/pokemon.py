@@ -190,10 +190,6 @@ class Screen:
         system('clear')
         print(f"{fill * self.screen_size}\n{head}\n{fill * self.screen_size}")
 
-    # TODO  
-    # position center, right, left
-    # message printed left to right, right to left
-
     def fancy_message(self, message, left_to_right=False, position='center', delay=0.35):
         message_len = len(message)
         if position == 'center':
@@ -241,7 +237,7 @@ if __name__ == '__main__':
     system('clear')
 
     print('Genearting pokemons...')
-    pokemons = list(PokeGenerator(pokemon_limit=6).pokemons)
+    pokemons = list(PokeGenerator().pokemons)
 
     while True:
         pokes = [pokemon.recover() for pokemon in pokemons]
@@ -291,9 +287,6 @@ if __name__ == '__main__':
             message = f'{pokemon.name.capitalize()} attacks with {attack.name.capitalize()}'
             screen.fancy_message(message, left_to_right=True, position=position, delay=0.1)
             pokemon.charge(vs_pokemon, attack)
-
-            # if not turn:
-            #     sleep(1)
 
             turn = not turn
             sleep(1.3)
