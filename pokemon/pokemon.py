@@ -248,8 +248,10 @@ def get_fighters(pokemons):
     return user_pokemon, random.choice(pokemons)
 
 if __name__ == '__main__':
+    # TODO screen_size (-s), pokemon_limit (-p), moves_limit (-v) by argv
+    
     print('Generating pokemons...')
-    pokemons = list(PokeGenerator(pokemon_limit=8, moves_limit=12).pokemons)
+    pokemons = list(PokeGenerator(pokemon_limit=6, moves_limit=10).pokemons)
 
     while True:
         system('clear')
