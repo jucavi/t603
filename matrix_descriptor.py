@@ -1,30 +1,29 @@
 import numpy as np
 
-class Descriptior:
-    def __init__(self, instance):
-        self.values = list(map(lambda row: list(row), zip(*instance.matrix)))
-        print(self.values)
-
-    def __get__(self, instance, owner):
-        print('In __get__')
-        return self.values
+class Descriptor:
+    def __init__(self, obj):
+        self.col = list(map(lambda row: list(row), zip(*obj.matrix)))
         
-    def __set__(self, instance, value):
-        print('In __set__', self)
-        print('In __set__', instance.__repr__())
-        print(value)
+    def __get__(self, obj, objtype=None):
+        print('In __get__')
+        return self.col
+        
+    def __set__(self, obj, value):
+        print('In __set__')
+     
+    def __str__(self):
+        return str(self.col)
 
 class Matrix:
-    
     def __init__(self, matrix):
         self.matrix = matrix
-        self.__columns = Descriptior(self)
+        self.col = Descriptor(self)
         
     def rows(self):
         return self.matrix
     
     def columns(self):
-        return self.__columns.values
+        return self.col
     
     def __str__(self):
         rep = ['[\n'] + [('  ' + str(row) + '\n') for row in self.matrix] + [']\n']
@@ -34,8 +33,14 @@ class Matrix:
     
 matrix = Matrix([[1,2,3], [4,5,6]])
 
-matrix.rows()[1][1] = 8
-assert matrix.rows()[1][1] == 8
+rows = matrix.rows()
+rows[1][1] = 8
+assert matrix.rows()[1][1] == rows[1][1]
 
-matrix.columns()[1][1] = 5
-assert matrix.columns()[1][1] == 5
+columns = matrix.columns()
+print(type(columns))
+columns[1][1] = 5
+
+
+print(matrix.rows())
+print(matrix.columns())
