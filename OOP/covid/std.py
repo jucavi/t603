@@ -43,8 +43,12 @@ class Std:
     def r(self):
         return  self.covariance / ((self.x_variance ** 0.5) * (self.y_variance ** 0.5))
     
-    def predict(self, x):
+    def linear_predict(self, x):
         return self.gradient * x + self.interception
+    
+    @property
+    def linear_predictions(self):
+        return tuple(self.linear_predict(x) for x in self.x)
         
     
     def __str__(self):
