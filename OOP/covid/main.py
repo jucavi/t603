@@ -13,39 +13,39 @@ print(dirname)
 if not os.path.isfile(filepath):
     res = requests.get(url).json()
     with open(filepath, 'w') as file:
-        json.dump(res, file, indent=4)['data'] 
+        json.dump(res, file, indent=4)
         
-def get_data(filename=None):
-    if filename:
-        filepath = filename
+def get_data():
     try:
         with open(filepath) as file:
-            return json.load(file)
-    except Exception:
+            return json.load(file)['data']
+    except Exception as e:
+        print(e)
         return []
 
 def get_by_date(data):
     result = {}
     for zone in data:
         sdate = zone['fecha_informe'].split(' ')[0]
-        if result.get(sdate):
-            result[sdate].append(zone['casos_confirmados_totales'])
-        else:
-            result[sdate] = [zone['casos_confirmados_totales']]
+        value = result.setdefault(sdate, [])
+        value.append(zone)
     return result
 
-data = get_data(filename)
-confirmed_per_week = [sum(confirmed) for confirmed in get_by_date(data).values()]
-confirmed_per_week.reverse()
-weeks = list(range(len(confirmed_per_week)))
+def confirmed_per_week(data):
+    return list(map(lambda key: data[key], sorted(data.keys())))
 
-std = Std(weeks, confirmed_per_week)
+data = get_data()
+data = get_by_date(data)
+conf_per_week = confirmed_per_week(data)
+total_conf_per_week = [sum(zone['casos_confirmados_totales'] for zone in week) for week in conf_per_week]
+weeks = list(range(len(conf_per_week)))
+
+std = Std(weeks, total_conf_per_week)
 predicts = [std.predict(week) for week in weeks]
 
-plt.legend(loc='upper left')
 plt.xlabel('Weeks')
 plt.ylabel('Acumulated Cases')
-plt.plot(weeks, confirmed_per_week, '-b')
+plt.plot(weeks, total_conf_per_week, '-b')
 plt.plot(weeks, predicts, '-r')
 plt.show()
 
