@@ -12,7 +12,7 @@ filepath = os.path.join(dirname, filename)
 if not os.path.isfile(filepath):
     res = requests.get(url).json()
     with open(filepath, 'w') as file:
-        json.dump(res, file, indent=4)['data'] 
+        json.dump(res, file, indent=4)
         
 def get_data():
     try:
@@ -36,6 +36,7 @@ weeks = list(range(len(confirmed_per_week)))
 
 std = Std(weeks, confirmed_per_week)
 print('Pearson:', std.r)
+
 predicts = [std.predict(week) for week in weeks]
 
 plt.xlabel('Weeks')
