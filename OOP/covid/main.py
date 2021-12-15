@@ -10,10 +10,12 @@ filename = 'covid.json'
 dirname = os.path.dirname(__file__)
 filepath = os.path.join(dirname, filename)
 
-if not os.path.isfile(filepath):
+
+def download_data():
     res = requests.get(url).json()
     with open(filepath, 'w', encoding='utf8') as file:
         json.dump(res, file, indent=4, ensure_ascii=False)
+    return res
 
 def get_data():
     try:
@@ -21,6 +23,20 @@ def get_data():
             return json.load(file)
     except Exception:
         return {}
+
+def fetch_data():
+    if os.path.isfile(filepath):
+        data = get_data()['data']
+        today = datetime.now().date().isoformat()
+        last_report = to_iso_format(data[0]['fecha_informe'].split(' ')[0])
+
+        if get_weeks_between(last_report, today) <= 1:
+            return data
+
+    data = download_data()
+    return data.get('data')
+
+
 
 def get_key_by_date(data, key):
     result = {}
@@ -30,6 +46,9 @@ def get_key_by_date(data, key):
         value.append(zone[key])
     return result
 
+def to_iso_format(date_str):
+    return date_str.replace('/', '-')
+
 # def prediction_for_day(data, std_obj, day):
 #     week_days = 7
 #     date_time = data[0]['fecha_informe']
@@ -37,14 +56,14 @@ def get_key_by_date(data, key):
 #     last_day = int(date.split('/')[2])
 #     return std_obj.linear_predict(std_obj.n + (day - last_day) / week_days)
 
-def get_weeks_between(last_day_report_str, day_str):
+def get_weeks_between(last_report_str, day_str_iso):
     week_days = 7
-    date_format = '%Y/%m/%d'
-    last_day_report = datetime.strptime(last_day_report_str, date_format)
-    day_to_predict = datetime.strptime(day_str, date_format)
-    return (day_to_predict - last_day_report).days / week_days
+    last_report_iso = to_iso_format(last_report_str)
+    last_report = datetime.fromisoformat(last_report_iso)
+    day_to_predict = datetime.fromisoformat(day_str_iso)
+    return (day_to_predict - last_report).days / week_days
 
-data = get_data()['data']
+data = fetch_data()
 confirmed_per_week = [sum(confirmed) for confirmed in get_key_by_date(data, 'casos_confirmados_totales').values()]
 confirmed_per_week.reverse()
 # first week starting at 1
@@ -57,9 +76,9 @@ print(f'Interception: {cct_std.interception:.2f}')
 print(f'Confirmed mean: {cct_std.y_mean:.1f}')
 print(f'Pearson: {cct_std.r:.4f}')
 
-date1 = '2021/12/31'
-date2 = '2020/11/01'
-date3 = '2021/02/21'
+date1 = '2021-12-31'
+date2 = '2020-11-01'
+date3 = '2021-02-21'
 last_day_report_str = data[0]['fecha_informe'].split()[0]
 
 week_date1 = get_weeks_between(last_day_report_str, date1)
@@ -69,13 +88,6 @@ weeks_to_predict = [cct_std.n + weeks for weeks in (week_date1, week_date2, week
 
 predicts_generator = [cct_std.linear_predict(week) for week in weeks_to_predict]
 
-plt.xlabel('Weeks')
-plt.ylabel('Accumulated Cases')
-for week, predict in zip(weeks_to_predict, predicts_generator):
-    plt.scatter(week, predict, label=f'Predict_{week:.0f}_week')
-plt.plot(cct_std.x, cct_std.y, label="Accumulated Cases")
-plt.plot(cct_std.x, cct_std.linear_predictions, label="Prediction")
-plt.show()
 
 
 
@@ -87,13 +99,21 @@ tia_zone_2021 = list(range(1, len(tia_2021) + 1))
 
 tia_2020_std = Std(tia_zone_2020, tia_2020)
 tia_2021_std = Std(tia_zone_2021, tia_2021)
-print('Accumulated incidence at 14 days:', tia_2020_std.y_mean)
-print('Accumulated incidence at 14 days:', tia_2021_std.y_mean)
+print('Mean accumulated incidence at 14 days:', tia_2020_std.y_mean)
+print('Mean accumulated incidence at 14 days:', tia_2021_std.y_mean)
+print('t Student:', tia_2020_std.t_statistic(tia_2021_std))
 
-plt.xlabel('Zones')
-plt.ylabel('Accumulated Incidence')
-plt.plot(tia_2020_std.x, tia_2020_std.y, label="Accumulated Incidence 2020")
-plt.plot(tia_2021_std.x, tia_2021_std.y, label="Accumulated Incidence 2021")
+ax1 = plt.subplot(221)
+ax1.plot(cct_std.x, cct_std.y, label="Accumulated Cases")
+ax1.plot(cct_std.x, cct_std.linear_predictions, label="Prediction")
+
+
+ax2 = plt.subplot(222)
+for week, predict in zip(weeks_to_predict, predicts_generator):
+    ax2.scatter(week, predict, label=f'Predict_{week:.0f}_week')
+
+ax3 = plt.subplot(212)
+ax3.plot(tia_2020_std.x, tia_2020_std.y, label="Accumulated Incidence 2020")
+ax3.plot(tia_2021_std.x, tia_2021_std.y, label="Accumulated Incidence 2021")
 plt.show()
 
-print('t Student:', tia_2020_std.t_statistic(tia_2021_std))

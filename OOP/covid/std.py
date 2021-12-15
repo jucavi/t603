@@ -60,15 +60,25 @@ class Std:
     def linear_predict(self, x):
         return self.gradient * x + self.interception
 
-    def pooled_std_conv(self, other):
+    def psc_variance(self, other):
+        """Pooled standard deviation of two samples"""
+
         numerator = ((self.n - 1) * self.y_variance + (other.n - 1) * other.y_variance)
         denominator = self.n + other.n - 2
         return (numerator / denominator) ** 0.5
 
+    def dof(self, other):
+        """Degrees of freedom"""
+
+        return self.n + other.n - 2
+
     def t_statistic(self, other):
+
         if 0.5 < self.y_variance / other.y_variance < 2:
-            return (self.y_mean - other.y_mean) / self.pooled_std_conv(other)
-        return None
+            return (self.y_mean - other.y_mean) / (self.psc_variance(other) * (1 / self.n + 1 / other.n) ** 0.5)
+        else:
+            # see https://en.wikipedia.org/wiki/Student%27s_t-test#Equal_variances
+            return None
 
     def __str__(self):
         return f'x: {self.x}\ny: {self.y}\nn: {self.n}'
