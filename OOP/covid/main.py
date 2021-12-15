@@ -64,11 +64,12 @@ def get_weeks_between(last_report_str, day_str_iso):
     return (day_to_predict - last_report).days / week_days
 
 data = fetch_data()
+
 confirmed_per_week = [sum(confirmed) for confirmed in get_key_by_date(data, 'casos_confirmados_totales').values()]
 confirmed_per_week.reverse()
+weeks = list(range(len(confirmed_per_week)))
 # first week starting at 1
 # weeks = list(range(1, len(confirmed_per_week) + 1))
-weeks = list(range(len(confirmed_per_week)))
 
 cct_std = Std(weeks, confirmed_per_week)
 print(f'Gradient: {cct_std.gradient:.1f}')
@@ -76,32 +77,33 @@ print(f'Interception: {cct_std.interception:.2f}')
 print(f'Confirmed mean: {cct_std.y_mean:.1f}')
 print(f'Pearson: {cct_std.r:.4f}')
 
+# for predictions
 date1 = '2021-12-31'
 date2 = '2020-11-01'
 date3 = '2021-02-21'
 last_day_report_str = data[0]['fecha_informe'].split()[0]
-
 week_date1 = get_weeks_between(last_day_report_str, date1)
 week_date2 = get_weeks_between(last_day_report_str, date2)
 week_date3 = get_weeks_between(last_day_report_str, date3)
-weeks_to_predict = [cct_std.n + weeks for weeks in (week_date1, week_date2, week_date3)]
 
+weeks_to_predict = [cct_std.n + weeks for weeks in (week_date1, week_date2, week_date3)]
 predicts_generator = [cct_std.linear_predict(week) for week in weeks_to_predict]
 
-
-
-
 tia_by_week = get_key_by_date(data, 'tasa_incidencia_acumulada_ultimos_14dias')
+
 tia_2020 = tia_by_week['2020/12/15']
 tia_2021 = tia_by_week['2021/12/14']
-tia_zone_2020 = list(range(1, len(tia_2020) + 1))
-tia_zone_2021 = list(range(1, len(tia_2021) + 1))
 
+tia_zone_2020 = list(range(1, len(tia_2020) + 1))
 tia_2020_std = Std(tia_zone_2020, tia_2020)
+
+tia_zone_2021 = list(range(1, len(tia_2021) + 1))
 tia_2021_std = Std(tia_zone_2021, tia_2021)
+
 print('Mean accumulated incidence at 14 days:', tia_2020_std.y_mean)
 print('Mean accumulated incidence at 14 days:', tia_2021_std.y_mean)
 print('t Student:', tia_2020_std.t_statistic(tia_2021_std))
+
 
 ax1 = plt.subplot(221)
 ax1.plot(cct_std.x, cct_std.y, label="Accumulated Cases")
