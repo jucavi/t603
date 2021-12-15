@@ -22,8 +22,16 @@ class Std:
         return sum((xi - self.x_mean)**2 for xi in self.x) / self.n
 
     @property
+    def x_q_variance(self):
+        return sum((xi - self.x_mean)**2 for xi in self.x) / (self.n - 1)
+
+    @property
     def y_variance(self):
         return sum((yi - self.y_mean)**2 for yi in self.y) / self.n
+
+    @property
+    def y_q_variance(self):
+        return sum((yi - self.y_mean)**2 for yi in self.y) / (self.n - 1)
 
     @property
     def covariance(self):
@@ -52,17 +60,15 @@ class Std:
     def linear_predict(self, x):
         return self.gradient * x + self.interception
 
+    def pooled_std_conv(self, other):
+        numerator = ((self.n - 1) * self.y_variance + (other.n - 1) * other.y_variance)
+        denominator = self.n + other.n - 2
+        return (numerator / denominator) ** 0.5
+
+    def t_statistic(self, other):
+        if 0.5 < self.y_variance / other.y_variance < 2:
+            return (self.y_mean - other.y_mean) / self.pooled_std_conv(other)
+        return None
+
     def __str__(self):
         return f'x: {self.x}\ny: {self.y}\nn: {self.n}'
-
-
-# x = [1,2,3]
-# y = [10,20,27]
-
-# sample = Std(x, y)
-
-# print(sample)
-# # print(sample.covariance)
-# # print(sample.r)
-# print(sample.gradient)
-# print(sample.interception)
