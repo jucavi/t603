@@ -95,3 +95,5 @@ plt.ylabel('Accumulated Incidence')
 plt.plot(tia_2020_std.x, tia_2020_std.y, label="Accumulated Incidence 2020")
 plt.plot(tia_2021_std.x, tia_2021_std.y, label="Accumulated Incidence 2021")
 plt.show()
+
+print('t Student:', tia_2020_std.t_statistic(tia_2021_std))
