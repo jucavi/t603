@@ -108,14 +108,17 @@ print('t Student:', tia_2020_std.t_statistic(tia_2021_std))
 ax1 = plt.subplot(221)
 ax1.plot(cct_std.x, cct_std.y, label="Accumulated Cases")
 ax1.plot(cct_std.x, cct_std.linear_predictions, label="Prediction")
+plt.legend(loc='upper left')
 
 
 ax2 = plt.subplot(222)
 for week, predict in zip(weeks_to_predict, predicts_generator):
     ax2.scatter(week, predict, label=f'Predict_{week:.0f}_week')
+plt.legend(loc='upper left')
 
 ax3 = plt.subplot(212)
 ax3.plot(tia_2020_std.x, tia_2020_std.y, label="Accumulated Incidence 2020")
 ax3.plot(tia_2021_std.x, tia_2021_std.y, label="Accumulated Incidence 2021")
+plt.legend(loc='upper left')
 plt.show()
 
