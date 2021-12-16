@@ -51,13 +51,6 @@ def get_key_by_date(data, key):
 def to_iso_format(date_str):
     return date_str.replace('/', '-')
 
-# def prediction_for_day(data, std_obj, day):
-#     week_days = 7
-#     date_time = data[0]['fecha_informe']
-#     date = date_time.split()[0]
-#     last_day = int(date.split('/')[2])
-#     return std_obj.linear_predict(std_obj.n + (day - last_day) / week_days)
-
 def get_weeks_between(last_report_str, day_str_iso):
     week_days = 7
     last_report_iso = to_iso_format(last_report_str)
@@ -104,7 +97,7 @@ tia_2021_std = Std(tia_zone_2021, tia_2021)
 
 print('Mean accumulated incidence at 14 days:', tia_2020_std.y_mean)
 print('Mean accumulated incidence at 14 days:', tia_2021_std.y_mean)
-print('t Student:', tia_2020_std.t_statistic(tia_2021_std))
+print('t Student:', tia_2021_std.t_statistic(tia_2020_std))
 
 
 fig, axs = plt.subplots(1, 2, figsize=(15, 6))
