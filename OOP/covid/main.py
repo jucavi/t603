@@ -4,6 +4,8 @@ import json
 import os
 import matplotlib.pyplot as plt
 from datetime import datetime
+import numpy as np
+from scipy.optimize import curve_fit
 
 url = 'https://datos.comunidad.madrid/catalogo/dataset/b3d55e40-8263-4c0b-827d-2bb23b5e7bab/resource/907a2df0-2334-4ca7-aed6-0fa199c893ad/download/covid19_tia_zonas_basicas_salud_s.json'
 filename = 'covid.json'
@@ -105,20 +107,35 @@ print('Mean accumulated incidence at 14 days:', tia_2021_std.y_mean)
 print('t Student:', tia_2020_std.t_statistic(tia_2021_std))
 
 
-ax1 = plt.subplot(221)
-ax1.plot(cct_std.x, cct_std.y, label="Accumulated Cases")
-ax1.plot(cct_std.x, cct_std.linear_predictions, label="Prediction")
-plt.legend(loc='upper left')
+fig, axs = plt.subplots(1, 2, figsize=(15, 6))
+axs[0].set_title("Accumulated Cases / Prediction")
+axs[0].plot(cct_std.x, cct_std.y, label="Accumulated Cases")
+axs[0].plot(cct_std.x, cct_std.linear_predictions, label="Prediction")
 
-
-ax2 = plt.subplot(222)
+axs[1].set_title("Week prediction for accumulated cases")
 for week, predict in zip(weeks_to_predict, predicts_generator):
-    ax2.scatter(week, predict, label=f'Predict_{week:.0f}_week')
-plt.legend(loc='upper left')
+    axs[1].scatter(week, predict, label=f'Predict_{week:.0f}_week')
 
-ax3 = plt.subplot(212)
-ax3.plot(tia_2020_std.x, tia_2020_std.y, label="Accumulated Incidence 2020")
-ax3.plot(tia_2021_std.x, tia_2021_std.y, label="Accumulated Incidence 2021")
-plt.legend(loc='upper left')
+for ax in axs.flat:
+    ax.set(xlabel='Weeks', ylabel='Cases')
+    ax.label_outer()
+plt.show()
+
+fig, axs = plt.subplots(1, 2, figsize=(15, 6))
+for i, (ax, tia) in enumerate(zip(axs.flat, (tia_2020_std, tia_2021_std))):
+    ax.set_title(f'Accumulated Incidence 202{i}')
+    ax.plot(tia.x, tia.y, label='Accumulated Incidence 202{i}')
+
+    ax.set(xlabel='Zones', ylabel='Accumulated Incidence')
+    ax.label_outer()
+plt.show()
+
+fig, axs = plt.subplots(1, 2, figsize=(15, 6))
+for i, (ax, tia) in enumerate(zip(axs.flat, (tia_2020_std, tia_2021_std))):
+    ax.set_title(f'Accumulated Incidence 202{i}')
+    ax.hist(tia.y, bins='auto', label=f'TIA14 202{i}')
+
+    ax.set(xlabel=f'TIA14', ylabel='Probability')
+    ax.label_outer()
 plt.show()
 
