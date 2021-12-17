@@ -1,5 +1,3 @@
-from datetime import datetime
-
 class Std:
     def __init__(self, x, y):
         self.x = x
