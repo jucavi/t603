@@ -4,6 +4,7 @@
 *.txt
 *.csv
 *.json
+*.log
 
 __pycache__
 .venv
