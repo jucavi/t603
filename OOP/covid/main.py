@@ -5,7 +5,6 @@ import os
 import matplotlib.pyplot as plt
 from datetime import datetime
 import numpy as np
-from scipy.optimize import curve_fit
 
 url = 'https://datos.comunidad.madrid/catalogo/dataset/b3d55e40-8263-4c0b-827d-2bb23b5e7bab/resource/907a2df0-2334-4ca7-aed6-0fa199c893ad/download/covid19_tia_zonas_basicas_salud_s.json'
 filename = 'covid.json'
