@@ -36,7 +36,6 @@ class DB:
         with open(filepath, 'w') as file:
             json.dump(table.columns, file, ensure_ascii=False, indent=4)
             print(f'Table {table.name} have been created successfully')
-
         self._tables.append(table)
 
     def delete_table(self, name):
@@ -87,7 +86,6 @@ class Table:
     def add(self, **kwargs):
         self.__id += 1
         kwargs['id'] = self.__id
-
         for col in self._columns:
             if col in kwargs:
                 self._columns[col].append(kwargs[col])
