@@ -37,10 +37,10 @@ def logger(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
-        name = result['username']
         pathfile = os.path.join(os.path.dirname(__file__), 'call.log')
+
         with open(pathfile, 'a+') as file:
-            file.write(f'{datetime.datetime.now()}| User {name} {func.__name__}\n')
+            file.write(f'{datetime.datetime.now()}| User {result} {func.__name__}\n')
         return result
     return wrapper
 
