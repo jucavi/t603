@@ -4,10 +4,9 @@ from prettytable import PrettyTable
 
 class DB:
     def __init__(self, name, path='.'):
-        self._name = name
-        self._path = os.path.join(path, self._name)
-        self._tables = []
-        self._format_name = '{}.json'
+        self._name = f'{name}_db'
+        self._cwd = os.path.join(path, self.name)
+        self._tables = {}
 
     @property
     def name(self):
@@ -15,59 +14,57 @@ class DB:
 
     @property
     def path(self):
-        return self._path
+        return self._cwd
+
+    @property
+    def tables(self):
+        return self._tables
+
+    def setup(self):
+        try:
+            os.mkdir(self._cwd)
+        except:
+            print(f'{self.name!r} already exists. Loading tables...')
+            self.load()
+
+    def load(self):
+        files = os.listdir(self._cwd)
+        for file in files:
+            name = file.partition('.')[0]
+            self.load_table(name)
 
     def load_table(self, name):
-        filepath = self._get_table_path(name)
         try:
-            with open(filepath) as file:
-                table_dict = json.load(file)
-                if table_dict:
-                    return self.make_table(name, table_dict)
-        except Exception:
-            print(f'Unable to open table {name!r}')
+            with open(os.path.join(self._cwd, f'{name}.json')) as f:
+                data = json.load(f)
+            table = Table(name, list(data.keys())[1:])
+            table.add_rows(*list(zip(*list(data.values())[1:])))
+            self._tables[name] = table
+        except Exception as e:
+            print(e)
 
-    def list_tables(self):
-        return ''.join(self._format_name.format(table.name) for table in self._tables)
+    def save(self):
+        for table in self.tables.values():
+            with open(os.path.join(self._cwd, f'{table.name}.json'), 'w') as file:
+                rows = [list(row_dict.values()) for row_dict in table.data.values()]
+                json.dump(dict(zip(table.columns, list(zip(*rows)))), file, indent=4, ensure_ascii=False)
 
-    def write_table(self, table):
-        filepath = self._get_table_path(table.name)
+    def append_table(self, table):
+        self._tables[table.name] = table
 
-        with open(filepath, 'w') as file:
-            json.dump(table.columns, file, ensure_ascii=False, indent=4)
-            print(f'Table {table.name} have been created successfully')
-        self._tables.append(table)
-        return table
+    def find(self, name):
+        return self.tables[name]
 
     def delete_table(self, name):
-        table  = self._find_table(name)
-        if table:
-            os.remove(self._get_table_path(name))
-            self._tables.remove(table[0])
-            print(f'Table {name} have been deleted successfully')
+        removed = self._tables.pop(name, None)
+        if removed:
+            os.remove(os.path.join(self._cwd, f'{table.name}.json'))
+            print(f'Table: {name!r} removed successfully.')
         else:
-            print(f'Table {name!r} not found!')
-
-    def make_table(self, name, table_dict):
-        columns = list(table_dict.keys())
-        table = Table(name, columns)
-        for row in zip(*table_dict.values()):
-            table.add(**dict(zip(columns, row)))
-        return table
+            print(f'Table: {name!r} not found. No table removed.')
 
     def __str__(self):
-        return '\n\n'.join(table.__str__() for table in self._tables)
-
-    # HELPER METHODS
-    def _find_table(self, name):
-        return list(filter(lambda t: t.name == name, self._tables))
-
-    def _get_table_path(self, name):
-        filename = self._format_name.format(name)
-        filepath = os.path.join(self.path, filename)
-        if not os.path.exists(self.path):
-            os.mkdir(self.path)
-        return filepath
+        return '\n\n'.join(table.__str__() for table in self.tables.values())
 
 
 class Table:
@@ -157,12 +154,20 @@ class Table:
 
 if __name__ == '__main__':
     p = os.path.dirname(__file__)
-    db = DB('user_db', p)
+    db = DB('app', p)
+    db.setup()
+    print(db)
     users = (('paul', False), ('jhon', False), ('lisa', False))
     table = Table('user', ('name', 'is_admin'))
     for user in users:
         table.add_row(user)
+    colors = (('red', True), ('blue', True), ('magenta', False))
+    table_color = Table('color', ('color', 'primary'))
+    for color in colors:
+        table_color.add_row(color)
     print(table)
+    print(table.data)
+    input()
     table.update_all_where('name', 'jhon', 'felix')
     table.update_all_where('name1', 'jhon', 'felix')
     table.update_all_where('name', 'rex', 'felix')
@@ -170,15 +175,20 @@ if __name__ == '__main__':
     table.update_by_id(8, 'is_admin', True)
     table.update_where('name', 'paul', 'rosa')
     print(table)
-    table.delete_all_where('name', 'lisa')
-    table.delete_all_where('name', 'lisa')
-    table.delete_all_where('name1', 'lisa')
-    table.delete_where('name', 'rosa')
-    table.delete_where('name', 'rosa')
-    table.delete_where('name1', 'rosa')
-    table.delete_by_id(2)
-    table.delete_by_id(2)
+    # table.delete_all_where('name', 'lisa')
+    # table.delete_all_where('name', 'lisa')
+    # table.delete_all_where('name1', 'lisa')
+    # table.delete_where('name', 'rosa')
+    # table.delete_where('name', 'rosa')
+    # table.delete_where('name1', 'rosa')
+    # table.delete_by_id(2)
+    # table.delete_by_id(2)
     print(table)
+    input()
+    db.append_table(table)
+    db.append_table(table_color)
+    print(db)
+    db.save()
 
 
 
