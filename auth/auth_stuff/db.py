@@ -4,7 +4,7 @@ from prettytable import PrettyTable
 
 class DB:
     def __init__(self, name, path='.'):
-        self._name = name.lower()
+        self._name = name
         self._path = os.path.join(path, self._name)
         self._tables = []
         self._format_name = '{}.json'
@@ -74,7 +74,8 @@ class Table:
     def __init__(self, name, columns):
         self.__id = 0
         self._name = name
-        self._columns = {'id': [], **{arg: [] for arg in columns}}
+        self._columns = ('id', *columns)
+        self.data = {}
 
     @property
     def name(self):
@@ -84,63 +85,103 @@ class Table:
     def columns(self):
         return self._columns
 
-    def add(self, **kwargs):
+    def add_row(self, row):
         self.__id += 1
-        kwargs['id'] = self.__id
-        for col in self._columns:
-            if col in kwargs:
-                self._columns[col].append(kwargs[col])
-            else:
-                self._columns[col].append(None)
+        row = (self.__id, *row)
+        if len(row) != len(self._columns):
+            raise ValueError('Invalid data!')
+        self.data[self.__id] = dict(zip(self._columns, row))
 
-    def remove_by(self, key, value):
-        if key in self._columns:
-            try:
-                index = self._columns[key].index(value)
-                for column in self._columns:
-                    self._columns[column].pop(index)
-            except Exception:
-                print(f'Missing {value=} in {key}')
+    def add_rows(self, *rows):
+        for row in rows:
+            self.add_row(row)
 
-    def update_by(self, key, value, new_value):
-        if key in self._columns:
-            try:
-                index = self._columns[key].index(value)
-                self._columns[key][index] = new_value
-            except IndexError:
-                print(f'Missing {value=} in {key}')
+    def find_by_id(self, id):
+        return self.data[id]
 
-    def find_by(self, key, value):
+    def find_all_by(self, column_name, value):
         try:
-            index = self._columns[key].index(value)
-            
+            return tuple(filter(lambda row: row[column_name] == value, self.data.values()))
+        except Exception:
+            return tuple()
+
+    def get_id_by(self, column_name, value):
+        try:
+            return self.find_all_by(self, column_name, value)[0]['id']
         except:
             return None
+
+    def delete_by_id(self, id):
+        removed = self.data.pop(id, None)
+        if removed:
+            print(f'Id: {id} removed successfully.')
+        else:
+            print(f'Id: {id} not found. No record removed.')
+
+    def delete_where(self, column_name, value):
+        try:
+            id = self.find_all_by(column_name, value)[0]['id']
+            self.delete_by_id(id)
+        except Exception as e:
+            print(f'Value: {value} not found. No record removed.')
+
+    def delete_all_where(self, column_name, value):
+        rows = self.find_all_by(column_name, value)
+        for row in rows:
+            self.delete_by_id(row['id'])
+
+    def update_by_id(self, id, column_name, new_value):
+        try:
+            self.data[id][column_name] = new_value
+        except Exception as e:
+            print(f'{id=} or {column_name=} not found. No record updated.')
+
+    def update_where(self, column_name, value, new_value):
+        try:
+            id = self.find_all_by(column_name, value)[0]['id']
+            self.update_by_id(id, column_name, new_value)
+        except Exception as e:
+            print(f'{column_name!r} not found. No record updated.')
+
+    def update_all_where(self, column_name, value, new_value):
+        rows = self.find_all_by(column_name, value)
+        for row in rows:
+            row[column_name] = new_value
 
     def __str__(self):
         x = PrettyTable()
         x.field_names = list(self._columns)
-        x.add_rows(list(zip(*self._columns.values())))
+        for row in self.data.values():
+            x.add_row(row.values())
         return x.__str__()
 
 if __name__ == '__main__':
     p = os.path.dirname(__file__)
     db = DB('user_db', p)
-    users = ({'name': 'paul', 'is_admin': False}, {'name': 'jhon', 'is_admin': False}, {'name': 'lisa', 'is_admin': False})
-    table1 = Table('user', ('name', 'name', 'is_admin'))
+    users = (('paul', False), ('jhon', False), ('lisa', False))
+    table = Table('user', ('name', 'is_admin'))
     for user in users:
-        table1.add(**user)
-    print(table1)
-    table1.remove_by('name', 'paul')
-    table1.remove_by('name', 'erika')
-    print(table1)
-    table1.update_by('name', 'lisa', 'elis')
-    print(table1)
-    db.write_table(table1)
-    input('.........')
-    table = db.load_table('user')
+        table.add_row(user)
     print(table)
-    print(db.list_tables())
+    table.update_all_where('name', 'jhon', 'felix')
+    table.update_all_where('name1', 'jhon', 'felix')
+    table.update_all_where('name', 'rex', 'felix')
+    table.update_by_id(3, 'is_admin', True)
+    table.update_by_id(8, 'is_admin', True)
+    table.update_where('name', 'paul', 'rosa')
+    print(table)
+    table.delete_all_where('name', 'lisa')
+    table.delete_all_where('name', 'lisa')
+    table.delete_all_where('name1', 'lisa')
+    table.delete_where('name', 'rosa')
+    table.delete_where('name', 'rosa')
+    table.delete_where('name1', 'rosa')
+    table.delete_by_id(2)
+    table.delete_by_id(2)
+    print(table)
+
+
+
 
 
 
