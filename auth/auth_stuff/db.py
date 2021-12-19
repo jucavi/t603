@@ -37,6 +37,7 @@ class DB:
             json.dump(table.columns, file, ensure_ascii=False, indent=4)
             print(f'Table {table.name} have been created successfully')
         self._tables.append(table)
+        return table
 
     def delete_table(self, name):
         table  = self._find_table(name)
@@ -92,22 +93,29 @@ class Table:
             else:
                 self._columns[col].append(None)
 
-    def remove_where(self, key, value):
+    def remove_by(self, key, value):
         if key in self._columns:
             try:
                 index = self._columns[key].index(value)
                 for column in self._columns:
                     self._columns[column].pop(index)
-            except IndexError:
+            except Exception:
                 print(f'Missing {value=} in {key}')
 
-    def update_where(self, key, value, new_value):
+    def update_by(self, key, value, new_value):
         if key in self._columns:
             try:
                 index = self._columns[key].index(value)
                 self._columns[key][index] = new_value
             except IndexError:
                 print(f'Missing {value=} in {key}')
+
+    def find_by(self, key, value):
+        try:
+            index = self._columns[key].index(value)
+            
+        except:
+            return None
 
     def __str__(self):
         x = PrettyTable()
@@ -123,9 +131,10 @@ if __name__ == '__main__':
     for user in users:
         table1.add(**user)
     print(table1)
-    table1.remove_where('name', 'paul')
+    table1.remove_by('name', 'paul')
+    table1.remove_by('name', 'erika')
     print(table1)
-    table1.update_where('name', 'lisa', 'elis')
+    table1.update_by('name', 'lisa', 'elis')
     print(table1)
     db.write_table(table1)
     input('.........')

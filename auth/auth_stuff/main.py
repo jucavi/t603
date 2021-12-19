@@ -1,10 +1,13 @@
-import os
-import json
+import os.path
 import getpass
 import hashlib
+import db
+import json
+from deco import logger
 from time import sleep
 from user import User
-from deco import logger
+from auth import Auth
+
 
 CWD = os.path.dirname(__file__)
 db_name = 'app_db.json'
@@ -58,9 +61,16 @@ def write_db(data, name, path='.'):
     with open(os.path.join(path, name), 'w') as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
 
-data = load_db('app_db.json', path=CWD)
-users = data['data'].setdefault('users', [])
-user_gest = User('gest', 'gest_pass')
+def create_db(name, *tables):
+    data = db.DB(name, CWD)
+    for table in tables:
+        data.write_table(table)
+    return data
+
+
+users = db.Table('user', ('name', 'pwd'))
+data = create_db('app_db', users)
+guest = User('guest', 'guest_pass')
 
 while True:
     os.system('clear')
@@ -70,16 +80,25 @@ while True:
     option = input('>> ')
 
     if option.lower() == 'q':
-        write_db(data, db_name, path=CWD)
+        data.write_table(users)
         break
 
     if option == '1':
-        user = signup()
+        username = input('User Name: ').strip()
+        while True:
+            password = getpass.getpass('Password: ')
+            conf_pass = getpass.getpass('Confirm password: ')
+            if password == conf_pass and password:
+                break
+
+        auth = Auth(users)
+        user = auth.signup(User(username, password))
+
     elif  option == '2':
         user = login()
 
-    if not user:
-        user = user_gest
+#     if not user:
+#         user = user_gest
 
-    print('Accessing....')
-    sleep(6)
+#     print('Accessing....')
+#     sleep(6)

@@ -1,7 +1,9 @@
+import hashlib
+
 class User:
     def __init__(self, username, password):
         self.username = username
-        self.password = password
+        self.password = hashlib.sha256(password.encode()).hexdigest()
 
     @property
     def is_admin(self):
@@ -9,6 +11,7 @@ class User:
 
     def __str__(self):
         return f'@{self.username}'
+
 
 class Admin(User):
     def __init__(self, username, password):
