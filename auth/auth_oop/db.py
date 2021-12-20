@@ -85,8 +85,9 @@ class Table:
     def add_row(self, row):
         self.__id += 1
         row = (self.__id, *row)
-        if len(row) != len(self._columns):
-            raise ValueError('Invalid data!')
+        # The Wheel!!!!!!
+        # if len(row) != len(self._columns):
+        #     raise ValueError('Invalid data!')
         self.data[self.__id] = dict(zip(self._columns, row))
 
     def add_rows(self, *rows):
@@ -97,10 +98,7 @@ class Table:
         return self.data[id]
 
     def find_where(self, column_name, value):
-        try:
-            return tuple(filter(lambda row: row[column_name] == value, self.data.values()))[0]
-        except Exception:
-            return None
+        return next(filter(lambda row: row[column_name] == value, self.data.values()), False)
 
     def get_id_by(self, column_name, value):
         try:
@@ -165,7 +163,7 @@ if __name__ == '__main__':
     table_color = Table('color', ('color', 'primary'))
     for color in colors:
         table_color.add_row(color)
-    # print(table)
+    print(table)
     # print(table.data)
     # input()
     # table.update_all_where('name', 'jhon', 'felix')

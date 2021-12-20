@@ -15,7 +15,7 @@ data.setup()
 if data.tables:
     users = data.find(table_name)
 else:
-    users = Table(table_name, ('username', 'password', 'is_admin'))
+    users = Table(table_name, ('username', 'password', 'is_admin', 'token'))
     data.append_table(users)
 
 auth = Auth(users)
@@ -46,4 +46,9 @@ while True:
         password = getpass.getpass('Password: ')
         user = auth.login(User(username, password))
         print(user)
+        try:
+            print(user.token)
+        except:
+            pass
+        print(user.session)
         input()
