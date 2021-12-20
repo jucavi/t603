@@ -53,7 +53,7 @@ class DB:
         self._tables[table.name] = table
 
     def find(self, name):
-        return self.tables[name]
+        return self.tables.get(name, None)
 
     def delete_table(self, name):
         removed = self._tables.pop(name, None)
@@ -96,15 +96,15 @@ class Table:
     def find_by_id(self, id):
         return self.data[id]
 
-    def find_all_by(self, column_name, value):
+    def find_where(self, column_name, value):
         try:
-            return tuple(filter(lambda row: row[column_name] == value, self.data.values()))
+            return tuple(filter(lambda row: row[column_name] == value, self.data.values()))[0]
         except Exception:
-            return tuple()
+            return None
 
     def get_id_by(self, column_name, value):
         try:
-            return self.find_all_by(self, column_name, value)[0]['id']
+            return self.find_where(column_name, value)['id']
         except:
             return None
 
@@ -117,13 +117,13 @@ class Table:
 
     def delete_where(self, column_name, value):
         try:
-            id = self.find_all_by(column_name, value)[0]['id']
+            id = self.find_where(column_name, value)[0]['id']
             self.delete_by_id(id)
         except Exception as e:
             print(f'Value: {value} not found. No record removed.')
 
     def delete_all_where(self, column_name, value):
-        rows = self.find_all_by(column_name, value)
+        rows = self.find_where(column_name, value)
         for row in rows:
             self.delete_by_id(row['id'])
 
@@ -135,13 +135,13 @@ class Table:
 
     def update_where(self, column_name, value, new_value):
         try:
-            id = self.find_all_by(column_name, value)[0]['id']
+            id = self.find_where(column_name, value)[0]['id']
             self.update_by_id(id, column_name, new_value)
         except Exception as e:
             print(f'{column_name!r} not found. No record updated.')
 
     def update_all_where(self, column_name, value, new_value):
-        rows = self.find_all_by(column_name, value)
+        rows = self.find_where(column_name, value)
         for row in rows:
             row[column_name] = new_value
 
@@ -154,7 +154,7 @@ class Table:
 
 if __name__ == '__main__':
     p = os.path.dirname(__file__)
-    db = DB('app', p)
+    db = DB('app_testing', p)
     db.setup()
     print(db)
     users = (('paul', False), ('jhon', False), ('lisa', False))
@@ -165,16 +165,16 @@ if __name__ == '__main__':
     table_color = Table('color', ('color', 'primary'))
     for color in colors:
         table_color.add_row(color)
-    print(table)
-    print(table.data)
-    input()
-    table.update_all_where('name', 'jhon', 'felix')
-    table.update_all_where('name1', 'jhon', 'felix')
-    table.update_all_where('name', 'rex', 'felix')
-    table.update_by_id(3, 'is_admin', True)
-    table.update_by_id(8, 'is_admin', True)
-    table.update_where('name', 'paul', 'rosa')
-    print(table)
+    # print(table)
+    # print(table.data)
+    # input()
+    # table.update_all_where('name', 'jhon', 'felix')
+    # table.update_all_where('name1', 'jhon', 'felix')
+    # table.update_all_where('name', 'rex', 'felix')
+    # table.update_by_id(3, 'is_admin', True)
+    # table.update_by_id(8, 'is_admin', True)
+    # table.update_where('name', 'paul', 'rosa')
+    # print(table)
     # table.delete_all_where('name', 'lisa')
     # table.delete_all_where('name', 'lisa')
     # table.delete_all_where('name1', 'lisa')
@@ -183,14 +183,23 @@ if __name__ == '__main__':
     # table.delete_where('name1', 'rosa')
     # table.delete_by_id(2)
     # table.delete_by_id(2)
-    print(table)
+    # print('All lisa:', table.find_where('name', 'lisa'))
+    # print('lisa:', table.get_id_by('name', 'lisa'))
+    # print(table)
     input()
     db.append_table(table)
     db.append_table(table_color)
     print(db)
     db.save()
+    new_db = DB('app', p)
+    new_db.setup()
+    table = db.find('user')
+    users = (('felix', False), ('jess', False), ('rita', False))
+    for user in users:
+        table.add_row(user)
 
-
+    print(table)
+    db.save()
 
 
 

@@ -9,8 +9,9 @@ def logger(func):
         pathfile = os.path.join(os.path.dirname(__file__), 'call.log')
         with open(pathfile, 'a+') as file:
             try:
-                file.write(f'{datetime.datetime.now()}| User {result.name} {func.__name__}\n')
+                role = 'admin' if result.is_admin else 'user'
+                file.write(f'{datetime.now()}| {func.__name__.capitalize()} {result.username!r} as {role}\n')
             except Exception:
-                file.write(f'{datetime.datetime.now()}| Function {func.__name__}\n')
+                file.write(f'{datetime.now()}| Function {func.__name__}\n')
         return result
     return wrapper
