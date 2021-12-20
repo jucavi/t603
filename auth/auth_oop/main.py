@@ -1,10 +1,8 @@
 import os.path
 import getpass
 from db import DB, Table
-from deco import logger
-from time import sleep
 from auth import Auth
-from user import Guest, User, Admin
+from user import User
 
 
 CWD = os.path.dirname(__file__)
