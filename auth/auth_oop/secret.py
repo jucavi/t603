@@ -1,8 +1,8 @@
 import os
-import random
-from datetime import datetime
+import time
 from hashlib import sha256
 
 def setup():
-    random.seed(datetime.now().date().isoformat())
-    os.environ['AuthCICE'] = sha256(str(random.random()).encode()).hexdigest()
+    t = time.localtime()
+    s = f'{t.tm_year}{t.tm_mon}{t.tm_mday}{t.tm_hour}{t.tm_min}'
+    os.environ['AuthCICE'] = sha256(s.encode()).hexdigest()

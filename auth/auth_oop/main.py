@@ -44,9 +44,9 @@ while True:
     os.system('clear')
     if user.token and auth.is_active_token(user):
         print('[3] Browse')
-        print('[4] Logout')
         if user.is_admin:
-            print('[5] Create Admin')
+            print('[4] Create Admin')
+        print('[5] Logout')
     else:
         print('[1] Signup')
         print('[2] Login')
@@ -75,9 +75,9 @@ while True:
         input('Now you can browse the page....')
 
     elif option == '4':
-        user = auth.logout(user)
+        admin_space()
 
     elif option == '5':
-        admin_space()
+        user = auth.logout(user)
 
     data.save()

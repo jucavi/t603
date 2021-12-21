@@ -3,17 +3,21 @@ from user import Guest, User, Admin
 from hashlib import sha256
 import random
 from os import environ
-from secret import setup
+import secret
 
 class Auth:
     def __init__(self, table):
         self._table = table
 
+    def get_secret(self):
+        secret.setup()
+
     def is_active_token(self, user):
+        self.get_secret()
         auth_user = self.get_user(user)
         if auth_user:
             if auth_user['token']:
-                return auth_user['token'].split('.')[1] == sha256(environ['AuthCICE'].encode()).hexdigest()
+                return auth_user['token'].split('.')[1] == environ['AuthCICE']
         return False
 
     def get_user(self, user):
@@ -29,9 +33,9 @@ class Auth:
         self._table.update_by_id(user_id, 'token', token)
 
     def token_gen(self, user):
-        setup()
+        self.get_secret()
         identifier = sha256(user.username.encode()).hexdigest()
-        secret = sha256(environ['AuthCICE'].encode()).hexdigest()
+        secret = environ['AuthCICE']
         rand = sha256(str(random.random()).encode()).hexdigest()
         return f'{identifier}.{secret}.{rand}'
 
