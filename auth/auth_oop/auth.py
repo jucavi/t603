@@ -59,8 +59,7 @@ class Auth:
             self.cookie(user)
         return user
 
-    @logger
+    # @logger
     def logout(self, user):
         user.token = None
         self.cookie(user, set=False)
-        return user

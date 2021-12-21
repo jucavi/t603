@@ -3,6 +3,7 @@ import getpass
 from db import DB, Table
 from auth import Auth
 from user import User, Guest
+from functools import wraps
 
 
 CWD = os.path.dirname(__file__)
@@ -20,28 +21,17 @@ else:
 auth = Auth(users)
 user = Guest()
 
-def admin_space():
-    while True:
-        os.system('clear')
-        print('[1] List Users')
-        print('[2] Set admin role')
-        print('[Q] Exit\n')
-        option = input('>> ')
 
-        if option.lower() == 'q':
-            data.save()
-            break
+def auth_access(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if auth.is_active_token(user):
+            return func(*args, **kwargs)
+        else:
+            return None
+    return wrapper
 
-        if option == '1':
-            print(users) # TODO paginate
-            input()
-
-        if option == '2':
-            user_id = int(input('Select user id: '))
-            users.update_by_id(user_id, 'is_admin', True)
-
-while True:
-    os.system('clear')
+def global_space(user):
     if user.token and auth.is_active_token(user):
         print('[3] Browse')
         if user.is_admin:
@@ -51,7 +41,43 @@ while True:
         print('[1] Signup')
         print('[2] Login')
     print('[Q] Exit\n')
-    option = input('>> ')
+    option =  input('>> ')
+    return option
+
+@auth_access
+def admin_space():
+    if user.is_admin:
+        while True:
+            os.system('clear')
+            print('[1] List Users')
+            print('[2] Set admin role')
+            print('[Q] Exit\n')
+            option = input('>> ')
+
+            if option.lower() == 'q':
+                data.save()
+                break
+
+            if option == '1':
+                print(users) # TODO paginate
+                input()
+
+            if option == '2':
+                user_id = int(input('Select user id: '))
+                users.update_by_id(user_id, 'is_admin', True)
+
+@auth_access
+def user_space():
+    input('Browse the page!!!...')
+
+@auth_access
+def log_out():
+    auth.logout(user)
+
+
+while True:
+    os.system('clear')
+    option = global_space(user)
 
     if option.lower() == 'q':
         break
@@ -72,12 +98,12 @@ while True:
         user = auth.login(User(username, password))
 
     elif option == '3':
-        input('Now you can browse the page....')
+        user_space()
 
     elif option == '4':
         admin_space()
 
     elif option == '5':
-        user = auth.logout(user)
+        log_out()
 
     data.save()
