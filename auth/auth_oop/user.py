@@ -4,6 +4,7 @@ class GlobalUser:
     def __init__(self, username, password):
         self.username = username
         self.password = hashlib.sha256(password.encode()).hexdigest()
+        self.token = None
 
     @property
     def is_admin(self):
@@ -26,8 +27,8 @@ class Guest(GlobalUser):
 class User(GlobalUser):
     def __init__(self, username, password):
         super().__init__(username, password)
-        self.__is_auth = False
 
+    
     def __str__(self):
         return f'{super().__str__()}'
 

@@ -1,6 +1,6 @@
 import os
 import json
-from prettytable import PrettyTable
+from prettytable import PrettyTable, FRAME
 
 class DB:
     def __init__(self, name, path='.'):
@@ -58,7 +58,7 @@ class DB:
     def delete_table(self, name):
         removed = self._tables.pop(name, None)
         if removed:
-            os.remove(os.path.join(self._cwd, f'{table.name}.json'))
+            os.remove(os.path.join(self._cwd, f'{name}.json'))
             print(f'Table: {name!r} removed successfully.')
         else:
             print(f'Table: {name!r} not found. No table removed.')
@@ -82,7 +82,7 @@ class Table:
     def columns(self):
         return self._columns
 
-    def add_row(self, row):
+    def add_row(self, row): # uggg the name
         self.__id += 1
         row = (self.__id, *row)
         # The Wheel!!!!!!
@@ -90,9 +90,18 @@ class Table:
         #     raise ValueError('Invalid data!')
         self.data[self.__id] = dict(zip(self._columns, row))
 
-    def add_rows(self, *rows):
+    def add_rows(self, *rows): # uggg the name
         for row in rows:
             self.add_row(row)
+
+    # The Wheel!!!!!!
+    # def append_row(self, row):
+    #     self.__id == row[0]
+    #     self.data[self.__id] = dict(zip(self._columns, row))
+
+    # def append_rows(self, *rows):
+    #     for row in rows:
+    #         self.append_row(row)
 
     def find_by_id(self, id):
         return self.data[id]
@@ -125,9 +134,6 @@ class Table:
         for row in rows:
             self.delete_by_id(row['id'])
 
-    def update_row(self):
-        pass
-
     def update_by_id(self, id, column_name, new_value):
         try:
             self.data[id][column_name] = new_value
@@ -147,26 +153,32 @@ class Table:
             row[column_name] = new_value
 
     def __str__(self):
-        x = PrettyTable()
+        x = PrettyTable(hrules=FRAME)
         x.field_names = list(self._columns)
+        x._max_with = 2
+        x.align = 'c'
         for row in self.data.values():
             x.add_row(row.values())
-        return x.__str__()
+        return x.get_string(title=self.name.upper())
 
 if __name__ == '__main__':
     p = os.path.dirname(__file__)
     db = DB('app_testing', p)
     db.setup()
     print(db)
-    users = (('paul', False), ('jhon', False), ('lisa', False))
-    table = Table('user', ('name', 'is_admin'))
-    for user in users:
-        table.add_row(user)
-    colors = (('red', True), ('blue', True), ('magenta', False))
-    table_color = Table('color', ('color', 'primary'))
-    for color in colors:
-        table_color.add_row(color)
-    print(table)
+    # users = (('paul', False), ('jhon', False), ('lisa', False))
+    # table = Table('user', ('name', 'is_admin'))
+    # for user in users:
+    #     table.add_row(user)
+    # colors = (('red', True), ('blue', True), ('magenta', False))
+    # table_color = Table('color', ('color', 'primary'))
+    # for color in colors:
+    #     table_color.add_row(color)
+    # print(table)
+    # table.delete_by_id(2)
+    # print(table)
+    # db.append_table(table)
+    # db.save()
     # print(table.data)
     # input()
     # table.update_all_where('name', 'jhon', 'felix')
@@ -187,20 +199,20 @@ if __name__ == '__main__':
     # print('All lisa:', table.find_where('name', 'lisa'))
     # print('lisa:', table.get_id_by('name', 'lisa'))
     # print(table)
-    input()
-    db.append_table(table)
-    db.append_table(table_color)
-    print(db)
-    db.save()
-    new_db = DB('app', p)
-    new_db.setup()
-    table = db.find('user')
-    users = (('felix', False), ('jess', False), ('rita', False))
-    for user in users:
-        table.add_row(user)
+    # input()
+    # db.append_table(table)
+    # db.append_table(table_color)
+    # print(db)
+    # db.save()
+    # new_db = DB('app', p)
+    # new_db.setup()
+    # table = db.find('user')
+    # users = (('felix', False), ('jess', False), ('rita', False))
+    # for user in users:
+    #     table.add_row(user)
 
-    print(table)
-    db.save()
+    # print(table)
+    # db.save()
 
 
 

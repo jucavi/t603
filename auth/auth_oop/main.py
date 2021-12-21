@@ -2,13 +2,12 @@ import os.path
 import getpass
 from db import DB, Table
 from auth import Auth
-from user import User
+from user import User, Guest
 
 
 CWD = os.path.dirname(__file__)
 db_name = 'app'
 table_name = 'users'
-
 
 data = DB(db_name, CWD)
 data.setup()
@@ -19,12 +18,33 @@ else:
     data.append_table(users)
 
 auth = Auth(users)
-auth_users = []
+user = Guest()
+
+def admin_space():
+    os.system('clear')
+    while True:
+        print('[1] List Users')
+        print('[2] Set admin role')
+        print('[Q] Exit\n')
+        option = input('>> ')
+
+        if option.lower() == 'q':
+            data.save()
+            break
+
+        if option == '1':
+            print(users)
 
 while True:
     os.system('clear')
-    print('[1] Signup')
-    print('[2] Login')
+    if user.token:
+        print('[3] Browse')
+        print('[4] Logout')
+        if user.is_admin:
+            print('[5] Create Admin')
+    else:
+        print('[1] Signup')
+        print('[2] Login')
     print('[Q] Exit\n')
     option = input('>> ')
 
@@ -45,13 +65,14 @@ while True:
         username = input('User Name: ').strip()
         password = getpass.getpass('Password: ')
         user = auth.login(User(username, password))
-        auth_users.append(user)
-        print(user)
-        try:
-            print(user.token)
-        except:
-            pass
-        print(user.session)
-        input()
+
+    elif option == '3':
+        input('Now you can browse the page....')
+
+    elif option == '4':
+        user = auth.logout(user)
+
+    elif option == '5':
+        admin_space()
 
     data.save()
