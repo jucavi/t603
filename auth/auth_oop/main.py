@@ -51,7 +51,7 @@ def admin_space():
             os.system('clear')
             print('[1] List Users')
             print('[2] Set admin role')
-            print('[Q] Exit\n')
+            print('[Q] Back to main\n')
             option = input('>> ')
 
             if option.lower() == 'q':
