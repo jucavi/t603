@@ -19,6 +19,7 @@ else:
     data.append_table(users)
 
 auth = Auth(users)
+auth_users = []
 
 while True:
     os.system('clear')
@@ -28,7 +29,6 @@ while True:
     option = input('>> ')
 
     if option.lower() == 'q':
-        data.save()
         break
 
     if option == '1':
@@ -45,6 +45,7 @@ while True:
         username = input('User Name: ').strip()
         password = getpass.getpass('Password: ')
         user = auth.login(User(username, password))
+        auth_users.append(user)
         print(user)
         try:
             print(user.token)
@@ -52,3 +53,5 @@ while True:
             pass
         print(user.session)
         input()
+
+    data.save()

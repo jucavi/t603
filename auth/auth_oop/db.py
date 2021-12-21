@@ -125,6 +125,9 @@ class Table:
         for row in rows:
             self.delete_by_id(row['id'])
 
+    def update_row(self):
+        pass
+
     def update_by_id(self, id, column_name, new_value):
         try:
             self.data[id][column_name] = new_value
