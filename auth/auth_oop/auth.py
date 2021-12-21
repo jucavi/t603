@@ -1,4 +1,4 @@
-from deco import logger
+from log import logger
 from user import Guest, User, Admin
 from hashlib import sha256
 import random
@@ -8,6 +8,13 @@ from secret import setup
 class Auth:
     def __init__(self, table):
         self._table = table
+
+    def is_active_token(self, user):
+        auth_user = self.get_user(user)
+        if auth_user:
+            if auth_user['token']:
+                return auth_user['token'].split('.')[1] == sha256(environ['AuthCICE'].encode()).hexdigest()
+        return False
 
     def get_user(self, user):
         return self._table.find_where('username', user.username)

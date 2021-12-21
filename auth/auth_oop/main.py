@@ -21,8 +21,8 @@ auth = Auth(users)
 user = Guest()
 
 def admin_space():
-    os.system('clear')
     while True:
+        os.system('clear')
         print('[1] List Users')
         print('[2] Set admin role')
         print('[Q] Exit\n')
@@ -33,11 +33,16 @@ def admin_space():
             break
 
         if option == '1':
-            print(users)
+            print(users) # TODO paginate
+            input()
+
+        if option == '2':
+            user_id = int(input('Select user id: '))
+            users.update_by_id(user_id, 'is_admin', True)
 
 while True:
     os.system('clear')
-    if user.token:
+    if user.token and auth.is_active_token(user):
         print('[3] Browse')
         print('[4] Logout')
         if user.is_admin:

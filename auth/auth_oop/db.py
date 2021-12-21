@@ -154,10 +154,14 @@ class Table:
 
     def __str__(self):
         x = PrettyTable(hrules=FRAME)
-        x.field_names = list(self._columns)
-        x._max_with = 2
+        columns = tuple(self._columns)
+        x.field_names = columns
+        widths = {}
+        for column in columns:
+            widths[column] = 70
+        x._max_width = widths
         x.align = 'c'
-        for row in self.data.values():
+        for key, row in self.data.items():
             x.add_row(row.values())
         return x.get_string(title=self.name.upper())
 
