@@ -74,7 +74,7 @@ def user_space():
     input('Browse the page!!!...')
 
 # @auth_access
-def log_out():
+def log_out(user):
     auth.logout(user)
 
 
@@ -92,7 +92,9 @@ while True:
             conf_pass = getpass.getpass('Confirm password: ')
             if password == conf_pass and password:
                 break
-        if not auth.signup(User(username, password)):
+        if auth.signup(User(username, password)):
+            input('Successfully singup')
+        else:
             input(f'{username!r} already exists!')
 
     elif  option == '2':
