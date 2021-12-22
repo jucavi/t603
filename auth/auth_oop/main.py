@@ -21,30 +21,20 @@ else:
 auth = Auth(users)
 user = Guest()
 
-
-# def auth_access(func):
-#     @wraps(func)
-#     def wrapper(*args, **kwargs):
-#         if auth.is_active_token(user):
-#             return func(*args, **kwargs)
-#         else:
-#             return None
-#     return wrapper
-
-def global_space(user):
-    if auth.is_active_token(user):
-        print('[3] Browse')
-        if user.is_admin:
-            print('[4] Create Admin')
-        print('[5] Logout')
-    else:
+def global_space():
+    if isinstance(user, Guest):
         print('[1] Signup')
         print('[2] Login')
+    else:
+        print('[3] Browse')
+        if user.is_admin:
+            print('[4] Admin Area')
+        print('[5] Logout')
     print('[Q] Exit\n')
     option =  input('>> ')
     return option
 
-# @auth_access
+@auth.authenticate
 def admin_space():
     if user.is_admin:
         while True:
@@ -59,28 +49,30 @@ def admin_space():
                 break
 
             if option == '1':
-                print(users) # TODO paginate
+                # TODO paginate
+                print(users)
                 input()
 
             if option == '2':
                 try:
                     user_id = int(input('Select user id: '))
                     users.update_by_id(user_id, 'is_admin', True)
+                    data.save()
                 except:
                     pass
 
-# @auth_access
+@auth.authenticate
 def user_space():
     input('Browse the page!!!...')
 
-# @auth_access
 def log_out(user):
     auth.logout(user)
 
 
 while True:
     os.system('clear')
-    option = global_space(user)
+    user = auth.is_active_token()
+    option = global_space()
 
     if option.lower() == 'q':
         break

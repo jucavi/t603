@@ -1,3 +1,4 @@
+from posixpath import commonpath
 from log import logger
 from user import Guest, User, Admin
 from hashlib import sha256
@@ -5,6 +6,7 @@ import random
 from os import environ, path
 import json
 import secret
+from functools import wraps
 
 class Auth:
     __path = path.dirname(__file__)
@@ -13,17 +15,40 @@ class Auth:
         self._table = table
 
     def get_secret(self):
+        '''Generate new secret based on time'''
         secret.setup()
 
     def set_token(self, user, token):
         auth_user_id = self._table.get_id_by('username', user.username)
         self._table.update_by_id(auth_user_id, 'token', token)
 
-    def is_active_token(self, user):
+    def is_active_token(self):
         self.get_secret()
+        username, token = self.cookies.get('token', {'user': None,  'token': None}).values()
+        if token:
+            token_shunk = token.split('.')[1]
+            secret = environ['AuthCICE']
+            if secret == token_shunk:
+                user = User(username, '')
+                auth_user_id = self._table.get_id_by('username', username)
+                user.password = self._table.find_by_id(auth_user_id)['password']
+                return self.login(user)
+        return Guest()
 
     def get_user(self, user):
         return self._table.find_where('username', user.username)
+
+    def authenticate(self, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            username, token = self.cookies['token'].values()
+            user = self._table.find_where('username', username)
+            if token and user:
+                if token == user['token'] and self.is_active_token():
+                    return func(*args, **kwargs)
+                else:
+                    return False
+        return wrapper
 
     @property
     def cookies(self):
@@ -33,11 +58,14 @@ class Auth:
         except FileNotFoundError:
             return {}
 
-    def set_cookie(self, user):
+    def set_cookie(self, user, auth=True):
         cookies = self.cookies
-        token = self.token_gen(user)
+        token = self.token_gen(user) if auth else None
         cookie = {
-            user.username: { 'token': token }
+            'token': {
+                'user': user.username,
+                'token': token
+            }
         }
         cookies.update(cookie)
         with open(path.join(self.__path, 'cookies.json'), 'w') as file:
@@ -74,5 +102,6 @@ class Auth:
     @logger
     def logout(self, user):
         self.set_token(user, None)
+        self.set_cookie(user, auth=False)
         return user
 

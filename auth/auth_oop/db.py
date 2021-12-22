@@ -170,10 +170,12 @@ if __name__ == '__main__':
     db = DB('app_testing', p)
     db.setup()
     print(db)
-    # users = (('paul', False), ('jhon', False), ('lisa', False))
-    # table = Table('user', ('name', 'is_admin'))
-    # for user in users:
-    #     table.add_row(user)
+    users = (('paul', False), ('jhon', False), ('lisa', False))
+    table = Table('user', ('name', 'is_admin'))
+    for user in users:
+        table.add_row(user)
+
+    print(table.find_by_id(2))
     # colors = (('red', True), ('blue', True), ('magenta', False))
     # table_color = Table('color', ('color', 'primary'))
     # for color in colors:
