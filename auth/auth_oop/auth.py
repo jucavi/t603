@@ -14,23 +14,12 @@ class Auth:
 
     def is_active_token(self, user):
         self.get_secret()
-        auth_user = self.get_user(user)
-        if auth_user:
-            if auth_user['token']:
-                return auth_user['token'].split('.')[1] == environ['AuthCICE']
-        return False
 
     def get_user(self, user):
         return self._table.find_where('username', user.username)
 
     def cookie(self, user, set=True):
-        if not isinstance(user, Guest) and set: # if login return None delete this
-            token = self.token_gen(user)
-            user.token = token
-        else:
-            token = None
-        user_id = self._table.get_id_by('username', user.username)
-        self._table.update_by_id(user_id, 'token', token)
+        pass
 
     def token_gen(self, user):
         self.get_secret()
@@ -43,7 +32,7 @@ class Auth:
     def signup(self, user):
         if self.get_user(user):
             return False
-        self._table.add_row((user.username, user.password, False, None))
+        self._table.add_row((user.username, user.password, False))
         return True
 
     @logger
@@ -61,6 +50,4 @@ class Auth:
 
     @logger
     def logout(self, user):
-        user.token = None
-        self.cookie(user, set=False)
-        return user
+        pass
