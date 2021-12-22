@@ -63,8 +63,11 @@ def admin_space():
                 input()
 
             if option == '2':
-                user_id = int(input('Select user id: '))
-                users.update_by_id(user_id, 'is_admin', True)
+                try:
+                    user_id = int(input('Select user id: '))
+                    users.update_by_id(user_id, 'is_admin', True)
+                except:
+                    pass
 
 @auth_access
 def user_space():
