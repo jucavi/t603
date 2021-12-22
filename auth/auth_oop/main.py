@@ -22,17 +22,17 @@ auth = Auth(users)
 user = Guest()
 
 
-def auth_access(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        if auth.is_active_token(user):
-            return func(*args, **kwargs)
-        else:
-            return None
-    return wrapper
+# def auth_access(func):
+#     @wraps(func)
+#     def wrapper(*args, **kwargs):
+#         if auth.is_active_token(user):
+#             return func(*args, **kwargs)
+#         else:
+#             return None
+#     return wrapper
 
 def global_space(user):
-    if user.token and auth.is_active_token(user):
+    if auth.is_active_token(user):
         print('[3] Browse')
         if user.is_admin:
             print('[4] Create Admin')
@@ -44,7 +44,7 @@ def global_space(user):
     option =  input('>> ')
     return option
 
-@auth_access
+# @auth_access
 def admin_space():
     if user.is_admin:
         while True:
@@ -69,11 +69,11 @@ def admin_space():
                 except:
                     pass
 
-@auth_access
+# @auth_access
 def user_space():
     input('Browse the page!!!...')
 
-@auth_access
+# @auth_access
 def log_out():
     auth.logout(user)
 
