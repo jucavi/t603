@@ -29,11 +29,8 @@ class Auth:
             token_shunk = token.split('.')[1]
             secret = environ['AuthCICE']
             if secret == token_shunk:
-                user = User(username, '')
-                auth_user_id = self._table.get_id_by('username', username)
-                user.password = self._table.find_by_id(auth_user_id)['password']
-                return self.login(user)
-        return Guest()
+                return True
+        return False
 
     def get_user(self, user):
         return self._table.find_where('username', user.username)

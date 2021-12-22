@@ -22,17 +22,20 @@ auth = Auth(users)
 user = Guest()
 
 def global_space():
-    if isinstance(user, Guest):
+    if not auth.is_active_token():
         print('[1] Signup')
         print('[2] Login')
+        print('[Q] Exit\n')
+        option =  input('>> ')
+        return option
     else:
         print('[3] Browse')
         if user.is_admin:
             print('[4] Admin Area')
         print('[5] Logout')
-    print('[Q] Exit\n')
-    option =  input('>> ')
-    return option
+        print('[Q] Exit\n')
+        option =  input('>> ')
+        return option if option in '345qQ' else ''
 
 @auth.authenticate
 def admin_space():
@@ -65,42 +68,46 @@ def admin_space():
 def user_space():
     input('Browse the page!!!...')
 
+@auth.authenticate
 def log_out(user):
     auth.logout(user)
 
+try:
+    while True:
+        os.system('clear')
+        # user = auth.is_active_token()
+        option = global_space()
 
-while True:
-    os.system('clear')
-    user = auth.is_active_token()
-    option = global_space()
+        if option.lower() == 'q':
+            break
 
-    if option.lower() == 'q':
-        break
+        if option == '1':
+            username = input('User Name: ').strip()
+            while True:
+                password = getpass.getpass('Password: ')
+                conf_pass = getpass.getpass('Confirm password: ')
+                if password == conf_pass and password:
+                    break
+            if auth.signup(User(username, password)):
+                input('Successfully singup')
+            else:
+                input(f'{username!r} already exists!')
 
-    if option == '1':
-        username = input('User Name: ').strip()
-        while True:
+        elif  option == '2':
+            username = input('User Name: ').strip()
             password = getpass.getpass('Password: ')
-            conf_pass = getpass.getpass('Confirm password: ')
-            if password == conf_pass and password:
-                break
-        if auth.signup(User(username, password)):
-            input('Successfully singup')
-        else:
-            input(f'{username!r} already exists!')
+            user = auth.login(User(username, password))
 
-    elif  option == '2':
-        username = input('User Name: ').strip()
-        password = getpass.getpass('Password: ')
-        user = auth.login(User(username, password))
+        elif option == '3':
+            user_space()
 
-    elif option == '3':
-        user_space()
+        elif option == '4':
+            admin_space()
 
-    elif option == '4':
-        admin_space()
+        elif option == '5':
+            log_out(user)
 
-    elif option == '5':
-        log_out(user)
-
-    data.save()
+        data.save()
+except KeyboardInterrupt:
+    os.system('clear')
+    print('Bye!!!')
