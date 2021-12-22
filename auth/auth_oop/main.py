@@ -107,6 +107,6 @@ while True:
         admin_space()
 
     elif option == '5':
-        log_out()
+        log_out(user)
 
     data.save()
