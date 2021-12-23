@@ -3,8 +3,6 @@ import getpass
 from db import DB, Table
 from auth import Auth
 from user import User, Guest
-from functools import wraps
-
 
 CWD = os.path.dirname(__file__)
 db_name = 'app'

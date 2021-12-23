@@ -1,4 +1,3 @@
-from posixpath import commonpath
 from log import logger
 from user import Guest, User, Admin
 from hashlib import sha256
