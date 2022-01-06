@@ -1,6 +1,7 @@
 import os
 import platform
 import json
+from datetime import timedelta
 
 def clear():
     if platform.system() == 'Windows':
@@ -32,3 +33,13 @@ def write_json_data(data, filename, path='', overwrite=False):
     if overwrite:
         with open(filepath, 'w+') as f:
             json.dump(data, f)
+
+def clear_await(func):
+    def wrapper(*args, **kwargs):
+        clear()
+        func(*args, **kwargs)
+        input('\nPress Enter to continue...')
+    return wrapper
+
+def f2delta(hours):
+        return timedelta(hours=float(hours))

@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 class IdentifierError(Exception):
     pass
 
@@ -17,7 +19,7 @@ class Option:
         return f'[{self.id}] {self.message}'
 
 class NumOption(Option):
-    def __init__(self, identifier, message, func):
+    def __init__(self, identifier, message, func=None):
         self.__is_valid(identifier)
         super().__init__(identifier, message, func)
 
@@ -26,7 +28,7 @@ class NumOption(Option):
             raise IdentifierError('Id must be numeric value')
 
 class AlphaOption(Option):
-    def __init__(self, identifier, message, func):
+    def __init__(self, identifier, message, func=None):
         self.__is_valid(identifier)
         super().__init__(identifier, message, func)
 
@@ -48,9 +50,9 @@ class OptionMenu():
         if isinstance(option, Option):
             self.options[option.id.lower()] = option
 
-    def print(self):
-        for option in self.options.values():
-            print(option)
+    def __str__(self):
+        return "\n".join(f'{option}' for option in self.options.values())
+
 
     def execute(self, identifier):
         identifier = str(identifier).lower()
@@ -58,7 +60,7 @@ class OptionMenu():
             self.options[identifier].func()
 
     def get_identifier(self, message):
-        identifier = input(f'{message} ').strip().lower()
+        identifier = input(f'\n{message} ').strip().lower()
         while True:
             if identifier in self.options:
                 return identifier
@@ -67,6 +69,45 @@ class OptionMenu():
     def execute_option(self, message):
         identifier = self.get_identifier(message)
         self.execute(identifier)
+
+class Flight:
+    def __init__(self, origin, destiny, departure_time, flight_time):
+        self.destiny = destiny
+        self.origin = origin
+        self.departure_time = departure_time
+        self.flight_time = flight_time
+
+    @property
+    def ETA(self):
+        return self.departure_time + self.flight_time + (self.destiny.utc - self.origin.utc)
+
+
+    def __str__(self):
+        return f'From: {self.origin.loc} To: {self.destiny.loc} {self.ETA} hours'
+
+
+class Airport:
+    def __init__(self, loc, city, name, utc, fligts):
+        self.loc = loc
+        self.city = city
+        self.name = name
+        self.utc = timedelta(hours=utc)
+        self.flights = fligts
+
+    def destinies(self):
+        return (loc for loc in self.flights)
+
+    def departures_to(self, loc):
+        return self.flights[loc]['departures']
+
+    def flight_time_to(self, loc):
+        return self.flights[loc]['flight_time']
+
+    def __str__(self):
+        return f'{self.loc} - {self.name} Airport'
+
+    def __repr__(self):
+        return f'{self.loc} - {self.name} Airport'
 
 def make_menu(identifiers, messages, funcs):
     menu = OptionMenu()
@@ -79,3 +120,20 @@ def make_menu(identifiers, messages, funcs):
             except IdentifierError:
                 pass
     return menu
+
+def make_numeric_menu(items):
+    menu = OptionMenu()
+    for i, item in enumerate(items, start=1):
+        menu.add_option(NumOption(i, item))
+    return menu
+
+
+def numeric_menu_with_return(items, prompt='>>'):
+    menu = make_numeric_menu(items)
+    print(menu)
+    str_index = menu.get_identifier(prompt)
+    return int(str_index) - 1
+
+
+if __name__ == '__main__':
+    print(numeric_menu_with_return(list('agua')))
