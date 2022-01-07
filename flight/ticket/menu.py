@@ -14,60 +14,58 @@ def from_to_menu(locs, airports):
     index = numeric_menu_with_return((COUNTRIES[loc] for loc in locs))
     return airports[locs[index]], locs[index]
 
-def list_tickets_menu():
+def list_tickets_menu(update=True):
     tickets = manager.ticket_list()
     tickets_ids = tuple(tickets.keys())
     index = numeric_menu_with_return(tickets.keys())
     try:
-        return tickets[tickets_ids[index]], index
+        return tickets_ids[index], index
     except:
         return None, None
 
 @clear_await
 def buy_menu():
     airports = manager.airports_list()
+    if airports:
+        print('From:')
+        origins_locs = tuple(loc for loc in airports)
+        origin, _ = from_to_menu(origins_locs, airports)
 
-    print('From:')
-    origins_locs = tuple(loc for loc in airports)
-    origin, _ = from_to_menu(origins_locs, airports)
+        print('To:')
+        destinies_locs = tuple(origin.destinies())
+        destiny, loc = from_to_menu(destinies_locs, airports)
+        flight_time = origin.flight_time_to(loc)
 
-    print('To:')
-    destinies_locs = tuple(origin.destinies())
-    destiny, loc = from_to_menu(destinies_locs, airports)
-    flight_time = origin.flight_time_to(loc)
+        print('At:')
+        departures = origin.flights[loc]['departures']
+        index = numeric_menu_with_return(departures)
+        departure = departures[index]
 
-    print('At:')
-    departures = origin.flights[loc]['departures']
-    index = numeric_menu_with_return(departures)
-    departure = departures[index]
-
-    _, tracker = Flight(origin, destiny, f2delta(flight_time), set_tomorrow(departure))
-    print(f'Keep! Tracking code: {tracker}')
+        _, tracker = Flight(origin, destiny, f2delta(flight_time), set_tomorrow(departure))
+        print(f'Keep! Tracking code: {tracker}')
 
 @clear_await
 def modify_menu():
-    ticket, index = list_tickets_menu()
+    ticket_id, index = list_tickets_menu()
     if index != None:
-        print('Modify....')
-        print(ticket)
+        manager.remove_ticket(ticket_id)
+        buy_menu.__wrapped__()
     else:
         print('Not tickets found!')
 
 
 @clear_await
 def remove_menu():
-    tickets = manager.ticket_list()
-    tickets_ids = tuple(tickets.keys())
-    index = numeric_menu_with_return(tickets.keys())
+    ticket_id, index = list_tickets_menu(update=False)
     if index != None:
-        manager.remove_ticket(tickets_ids[index])
+        manager.remove_ticket(ticket_id)
     else:
         print('Not tickets found!')
 
 
 main_menu_gen = (
-    (1, 2, 3, 'q'),
-    ('buy a ticket', 'modify ticket', 'remove ticket', 'quit'),
+    (1, 2, 3, 'Q'),
+    ('Buy a ticket', 'Modify ticket', 'Remove ticket', 'Quit'),
     (buy_menu, modify_menu, remove_menu, exit)
 )
 

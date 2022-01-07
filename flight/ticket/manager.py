@@ -3,7 +3,6 @@ from datetime import timedelta
 from models import Airport
 
 airports_data = load_json_data('airports.json')
-tickets_data = load_json_data('tickets.json')
 
 def airports_list():
     airports = dict()
@@ -16,15 +15,18 @@ def airports_list():
     return airports
 
 def ticket_list():
-    return tickets_data
+    return load_json_data('tickets.json')
 
 def remove_ticket(identifier):
-    try:
-        tickets_data.pop(identifier)
-        print('deleting...')
-        write_json_data(tickets_data, overwrite=True)
-    except:
-        return None
+    tickets_data = load_json_data('tickets.json')
+    tickets_data.pop(identifier)
+    print('Deleted!')
+    write_json_data(tickets_data, 'tickets.json', overwrite=True)
+
+def update_ticket(identifier):
+    origin_loc = identifier[:3]
+    airports = airports_list()
+    return airports[origin_loc]
 
 
 if __name__ == '__main__':

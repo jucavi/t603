@@ -4,9 +4,9 @@ class IdentifierError(Exception):
     pass
 
 class Option:
-    def __init__(self, identifier, message, func, cap=True):
+    def __init__(self, identifier, message, func):
         self.__set_func(func)
-        self.message = message.capitalize() if cap else message
+        self.message = message
         self.id = str(identifier).upper()
 
     def __set_func(self, func):
@@ -144,7 +144,7 @@ def make_numeric_menu(items):
         menu.add_option(NumOption(i, item))
     return menu
 
-def numeric_menu_with_return(items, prompt='>>'):
+def numeric_menu_with_return(items, prompt='>>', cap=False):
     if items:
         menu = make_numeric_menu(items)
         print(menu)
@@ -154,4 +154,5 @@ def numeric_menu_with_return(items, prompt='>>'):
 
 
 if __name__ == '__main__':
-    print(numeric_menu_with_return(list('agua')))
+    # print(numeric_menu_with_return(list('agua')))
+    pass
