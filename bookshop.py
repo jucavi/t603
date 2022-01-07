@@ -84,7 +84,7 @@ def print_wrap(text, width=SCREEN_WIDTH, fill=' '):
         else:
             print()
 
-       
+
 def prompt(str_prompt=PROMPT):
     return input(str_prompt)
 
@@ -92,28 +92,28 @@ def prompt(str_prompt=PROMPT):
 def id_generator(db, genre):
     words = genre.split(' ')
     if len(words) == 1:
-        chars = words[0][0].lower() * 2  
+        chars = words[0][0].lower() * 2
     elif len(words) > 1:
         chars = ''.join(word[0].lower() for word in words[:2])
-        
+
     if not chars:
         chars = '##'
-        
+
     id_partial = f'{chars}_'
-    
+
     books_by_genre = find_by_user_value(db, 'id', id_partial)
     try:
         max_id = max(int(book['id'][3:]) for book in books_by_genre)
     except :
         max_id = 0
-     
+
     return id_partial + str(max_id + 1)
 
 
 def is_valid_id(db, book, id_candidate):
     unique = filter(lambda b: (b != book) and (b['id'] != id_candidate), db)
     true_format = id_candidate[:3] == id_generator(db, book['genre'])[:3]
-    
+
     return unique and true_format
 
 
@@ -131,19 +131,19 @@ def user_value_format(user_value, key):
         user_value = user_value.capitalize()
     else:
         user_value = user_value.lower()
-        
+
     return user_value
 
 
 def search(db, key):
     text = f'\n"{key.capitalize()}" a buscar'
     print_wrap(text, fill=FILL_CHAR)
-    
+
     user_value = prompt()
     user_value = user_value_format(user_value, key)
-        
+
     books = find_by_user_value(db, key, user_value)
-    
+
     if not books:
         message = f'No hay resultados para la busqueda. ¿Desea volver a interntarlo? (Y/n)'
         prompt_message = PROMPT.rjust(SCREEN_WIDTH // 3)
@@ -152,10 +152,10 @@ def search(db, key):
             books.extend(search(db, key)[0])
         else:
             main(db)
-            
+
     return books, key
-   
-   
+
+
 def menu(patrones_de_busqueda):
     header = '''Gestion de Libros\n'''
     print_wrap(header, fill=FILL_CHAR)
@@ -164,7 +164,7 @@ def menu(patrones_de_busqueda):
         sub_header += f'[{i}] {opcion.capitalize():9}\n'
     sub_header += '  [L] Listar todo\n'
     sub_header += '  [C] Crear libro\n'
-    sub_header += '[q] Salir    \n'
+    sub_header += '[Q] Salir    \n'
     print_wrap(sub_header)
 
 
@@ -175,7 +175,7 @@ def adios():
 def alert(message='Alerta!', prompt_message=PROMPT):
     print_wrap(message)
     user = prompt(prompt_message)
-    
+
     if user.lower() == 'y':
         return True
     return False
@@ -184,7 +184,7 @@ def alert(message='Alerta!', prompt_message=PROMPT):
 def remove(db, book):
     message = f'''Esta a punto de eliminar "{book["title"].upper()}". ¿Está seguro? (Y/n)'''
     prompt_message = PROMPT.rjust(SCREEN_WIDTH // 3)
-    
+
     if alert(message, prompt_message):
         db.remove(book)
         print_wrap('Libro Eliminado\n\n', fill='*')
@@ -192,20 +192,20 @@ def remove(db, book):
 
 def update(db, book):
     write_to_log('', book, 'Editando -->')
-    
+
     print_wrap('Si desea modificar entre el <NUEVO> valor sino pulse <INTRO>\n', fill=FILL_CHAR)
     for key, value in book.items():
         if key != 'id':
             new_value = prompt(str_prompt=f'{key}: {value} >> '.rjust(SCREEN_WIDTH // 3))
-           
+
             if new_value:
                 #quedaria mejor si fuese en ingles
                 message = f'¿Desea modificar el {key.capitalize()} {value.title()} por {new_value.title()} (Y/n)?'
                 prompt_message = PROMPT.rjust(SCREEN_WIDTH // 3)
-                
+
                 if alert(message, prompt_message):
                     book[key] = user_value_format(new_value, key)
-                
+
     genre = book['genre']
     if genre and (genre not in genres):
         genres.append(genre)
@@ -213,15 +213,15 @@ def update(db, book):
     print_wrap('Si la ID no es correcta será generada automaticamente', fill=FILL_CHAR)
     new_id = prompt(str_prompt=f'id: {book["id"]} >> '.rjust(SCREEN_WIDTH // 3))
     new_id = user_value_format(new_id, 'id')
-    
+
     if is_valid_id(db, book, new_id):
         book['id'] = new_id
     else:
         book['id'] = id_generator(db, book['genre'])
-        
+
     write_to_log('', book, 'Editado a <--')
-     
-            
+
+
 def show_books(books):
     print_wrap('Listado de Libros', fill=FILL_CHAR)
     BOOKS_HEADER = '''\n{:4}  {:4}\t{:40} {:35} {:25}\n\n'''.format('', *(key.upper() for key in BOOK_KEYS))
@@ -233,13 +233,13 @@ def show_books(books):
         if i % LINES_PER_PAGE == 0:
             print_wrap(f'({pag})', fill=FILL_CHAR)
             prompt(str_prompt=': ')
-            if i != len(books): 
+            if i != len(books):
                 print_wrap(BOOKS_HEADER)
                 pag += 1
     if not len(books) % LINES_PER_PAGE == 0:
         print_wrap(f'({pag})', fill=FILL_CHAR)
         prompt(str_prompt=': ')
-    
+
 # TODO create_by() genre or author
 
 def create(db):
@@ -250,22 +250,22 @@ def create(db):
             value = prompt(str_prompt=f'{key}: '.rjust(SCREEN_WIDTH // 3))
             value = user_value_format(value, key)
             new_book[key] = value
-            
+
         new_book['id'] = id_generator(db, new_book['genre'])
-        
+
         write_to_log('', new_book, 'Creado')
-        
+
         db.append(new_book)
         print_wrap('\nNuevo libro agregado a la biblioteca\n', fill=FILL_CHAR)
-        
+
         message = f'¿Desea crear otro libro? (Y/n)'
         prompt_message = PROMPT.rjust(SCREEN_WIDTH // 3)
-        
+
         if alert(message, prompt_message):
-            create(db)  
+            create(db)
         else:
             main(db)
-         
+
 
 def create_update_delete_menu(db, books):
     print_wrap('\n\nCrear(C) Editar(E) Borrar(B) Inicio(I)')
@@ -273,11 +273,11 @@ def create_update_delete_menu(db, books):
 
     user_action = prompt().lower()
     if len(user_action) > 1:
-        action, book_id = user_action[0], user_action[1:] 
+        action, book_id = user_action[0], user_action[1:]
         # los libros son mostrados [index + 1] en el menu de show_books
         if book_id.isdigit():
             book_id = int(book_id) - 1
-        
+
             if book_id in range(len(books)):
                 if action == 'b':
                     write_to_log('', books[book_id], 'Borrado')
@@ -288,19 +288,19 @@ def create_update_delete_menu(db, books):
                     print_wrap('La acción no existe o aun no se ha implementado' )
         else:
             print('Formato de comando erroneo')
-            
+
     elif user_action == 'c':
         create(db)
-        
+
     elif user_action and user_action != 'i':
-        print('Formato de comando erroneo')     
+        print('Formato de comando erroneo')
     main(db)
 
-    
+
 def write_to_log(search_term, books, msg):
     timestamp = datetime.datetime.now()
     log_entry = '{}\t{} {} {} {}\n'
-    
+
     with open(LOG_FILE, 'a+') as file:
         if books:
             file.write(f'{msg} {search_term.upper()}\n')
@@ -312,15 +312,15 @@ def write_to_log(search_term, books, msg):
             book = books # only one book
             file.write(log_entry.format(timestamp, book["id"], book["title"], book["author"], book["genre"]))
 
-            
+
 def export_pickle(db, file):
     with open(file, 'wb') as file:
         try:
             pickle.dump(db, file)
-            print(f'Guardando en {file}...')
+            print(f'Guardando en {file.name}...')
         except:
             print('Imposible guardar en la database')
-                    
+
 
 def export_csv(db, file):
     header = ['id', 'title', 'author', 'genre']
@@ -330,8 +330,8 @@ def export_csv(db, file):
             csv_writer = csv.writer(file, delimiter=';')
             csv_writer.writerow(header)
             for book in db:
-                # csv_writer.writerow(book.values()) 
-                csv_writer.writerow([book['id'], book['title'], book['author'], book['genre']]) 
+                # csv_writer.writerow(book.values())
+                csv_writer.writerow([book['id'], book['title'], book['author'], book['genre']])
         except:
             print('Imposible guardar en la database')
 
@@ -339,19 +339,19 @@ def main(db):
     while True:
         menu(patrones_de_busqueda)
         user_input = prompt().lower()
-        
+
         if user_input == 'q':
             export_pickle(db, PICKLE_FILE)
-            export_csv(db, CSV_FILE)                 
+            export_csv(db, CSV_FILE)
             adios()
             exit()
-        
+
         if user_input in patrones_de_busqueda:
             books, search_term = search(db, patrones_de_busqueda[user_input])
 
             write_to_log(search_term, books, 'Busqueda por')
-            
-            show_books(books)   
+
+            show_books(books)
             create_update_delete_menu(db, books)
         elif user_input == 'l':
             books = db
@@ -362,9 +362,9 @@ def main(db):
         else:
             print('Por favor introduzca una opción válida, pulse cualquier tecla para contiuar')
 
-  
+
 try:
-    with open(PICKLE_FILE , 'rb') as db_file:    
+    with open(PICKLE_FILE , 'rb') as db_file:
         db = pickle.load(db_file)
 except Exception:
     main(DB)
