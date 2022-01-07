@@ -1,6 +1,6 @@
 from helpers import clear, clear_await, f2delta, set_tomorrow
 from models import Flight, make_menu, numeric_menu_with_return
-import parser
+import manager
 
 
 COUNTRIES = {
@@ -14,9 +14,18 @@ def from_to_menu(locs, airports):
     index = numeric_menu_with_return((COUNTRIES[loc] for loc in locs))
     return airports[locs[index]], locs[index]
 
+def list_tickets_menu():
+    tickets = manager.ticket_list()
+    tickets_ids = tuple(tickets.keys())
+    index = numeric_menu_with_return(tickets.keys())
+    try:
+        return tickets[tickets_ids[index]], index
+    except:
+        return None, None
+
 @clear_await
 def buy_menu():
-    airports = parser.airports_list()
+    airports = manager.airports_list()
 
     print('From:')
     origins_locs = tuple(loc for loc in airports)
@@ -37,11 +46,24 @@ def buy_menu():
 
 @clear_await
 def modify_menu():
-    print('Modify!')
+    ticket, index = list_tickets_menu()
+    if index != None:
+        print('Modify....')
+        print(ticket)
+    else:
+        print('Not tickets found!')
+
 
 @clear_await
 def remove_menu():
-    print('Remove!')
+    tickets = manager.ticket_list()
+    tickets_ids = tuple(tickets.keys())
+    index = numeric_menu_with_return(tickets.keys())
+    if index != None:
+        manager.remove_ticket(tickets_ids[index])
+    else:
+        print('Not tickets found!')
+
 
 main_menu_gen = (
     (1, 2, 3, 'q'),

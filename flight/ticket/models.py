@@ -4,9 +4,9 @@ class IdentifierError(Exception):
     pass
 
 class Option:
-    def __init__(self, identifier, message, func):
+    def __init__(self, identifier, message, func, cap=True):
         self.__set_func(func)
-        self.message = message.capitalize()
+        self.message = message.capitalize() if cap else message
         self.id = str(identifier).upper()
 
     def __set_func(self, func):
@@ -71,7 +71,7 @@ class OptionMenu():
         identifier = self.get_identifier(message)
         self.execute(identifier)
 
-@ticket('ticket.json')
+@ticket('tickets.json')
 class Flight:
     def __init__(self, origin, destiny, departure_time, flight_time):
         self.destiny = destiny
@@ -109,10 +109,16 @@ class Airport:
         return (loc for loc in self.flights)
 
     def departures_to(self, loc):
-        return self.flights[loc]['departures']
+        try:
+            return self.flights[loc]['departures']
+        except:
+            return None
 
     def flight_time_to(self, loc):
-        return self.flights[loc]['flight_time']
+        try:
+            return self.flights[loc]['flight_time']
+        except:
+            return None
 
     def __str__(self):
         return f'{self.loc}-{self.name}'
@@ -139,10 +145,12 @@ def make_numeric_menu(items):
     return menu
 
 def numeric_menu_with_return(items, prompt='>>'):
-    menu = make_numeric_menu(items)
-    print(menu)
-    str_index = menu.get_identifier(prompt)
-    return int(str_index) - 1
+    if items:
+        menu = make_numeric_menu(items)
+        print(menu)
+        str_index = menu.get_identifier(prompt)
+        return int(str_index) - 1
+    return None
 
 
 if __name__ == '__main__':

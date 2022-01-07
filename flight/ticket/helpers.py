@@ -19,9 +19,7 @@ def load_json_data(filename, path=''):
     try:
         with open(fullpath(filename, path)) as f:
             return json.load(f)
-    except FileNotFoundError:
-        print(f'Unable to find {filename} in ./{path}')
-    except json.decoder.JSONDecodeError:
+    except Exception:
         return {}
 
 def write_json_data(data, filename, path='', overwrite=False):
