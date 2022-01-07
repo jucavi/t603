@@ -1,4 +1,4 @@
-from datetime import timedelta
+from helpers import ticket
 
 class IdentifierError(Exception):
     pass
@@ -63,6 +63,7 @@ class OptionMenu():
         identifier = input(f'\n{message} ').strip().lower()
         while True:
             if identifier in self.options:
+                print()
                 return identifier
             identifier = input(f'Invalid option try again: ')
 
@@ -70,6 +71,7 @@ class OptionMenu():
         identifier = self.get_identifier(message)
         self.execute(identifier)
 
+@ticket('ticket.json')
 class Flight:
     def __init__(self, origin, destiny, departure_time, flight_time):
         self.destiny = destiny
@@ -81,6 +83,15 @@ class Flight:
     def ETA(self):
         return self.departure_time + self.flight_time + (self.destiny.utc - self.origin.utc)
 
+    def dict_ticket(self):
+        tracker = f'{self.origin.loc}{self.destiny.loc}{self.flight_time.strftime("%Y%m%d%H%M")}'
+        ticket = {
+                'From': self.origin.name,
+                'To:': self.destiny.name,
+                'At:': self.flight_time.strftime('%Y-%m-%d %H:%M'),
+                'ETA': self.ETA.strftime('%Y-%m-%d %H:%M')
+                }
+        return tracker, ticket
 
     def __str__(self):
         return f'From: {self.origin.loc} To: {self.destiny.loc} {self.ETA} hours'
@@ -91,7 +102,7 @@ class Airport:
         self.loc = loc
         self.city = city
         self.name = name
-        self.utc = timedelta(hours=utc)
+        self.utc = utc
         self.flights = fligts
 
     def destinies(self):
@@ -104,10 +115,10 @@ class Airport:
         return self.flights[loc]['flight_time']
 
     def __str__(self):
-        return f'{self.loc} - {self.name} Airport'
+        return f'{self.loc}-{self.name}'
 
     def __repr__(self):
-        return f'{self.loc} - {self.name} Airport'
+        return f'{self.loc}-{self.name}'
 
 def make_menu(identifiers, messages, funcs):
     menu = OptionMenu()
@@ -126,7 +137,6 @@ def make_numeric_menu(items):
     for i, item in enumerate(items, start=1):
         menu.add_option(NumOption(i, item))
     return menu
-
 
 def numeric_menu_with_return(items, prompt='>>'):
     menu = make_numeric_menu(items)

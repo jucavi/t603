@@ -1,7 +1,6 @@
-from helpers import clear, clear_await, f2delta
+from helpers import clear, clear_await, f2delta, set_tomorrow
 from models import Flight, make_menu, numeric_menu_with_return
 import parser
-from datetime import datetime
 
 
 COUNTRIES = {
@@ -11,39 +10,30 @@ COUNTRIES = {
     "BRA": "Brazil"
 }
 
+def from_to_menu(locs, airports):
+    index = numeric_menu_with_return((COUNTRIES[loc] for loc in locs))
+    return airports[locs[index]], locs[index]
+
 @clear_await
 def buy_menu():
     airports = parser.airports_list()
 
     print('From:')
     origins_locs = tuple(loc for loc in airports)
-    index = numeric_menu_with_return((COUNTRIES[loc] for loc in origins_locs))
-    origin = airports[origins_locs[index]]
-    print(origin)
+    origin, _ = from_to_menu(origins_locs, airports)
 
     print('To:')
     destinies_locs = tuple(origin.destinies())
-    index = numeric_menu_with_return((COUNTRIES[loc] for loc in destinies_locs))
-    destiny = airports[destinies_locs[index]]
-    print(destiny)
+    destiny, loc = from_to_menu(destinies_locs, airports)
+    flight_time = origin.flight_time_to(loc)
 
     print('At:')
-    departures = origin.flights[destinies_locs[index]]['departures']
-    departure_time = origin.flights[destinies_locs[index]]['flight_time']
+    departures = origin.flights[loc]['departures']
     index = numeric_menu_with_return(departures)
     departure = departures[index]
-    print(departure)
 
-    print(Flight(origin,
-                 destiny,
-                 f2delta(departure_time),
-                 datetime.strptime(departure, '%H:%M') #for tomorrow
-                )
-         )
-
-
-
-
+    _, tracker = Flight(origin, destiny, f2delta(flight_time), set_tomorrow(departure))
+    print(f'Keep! Tracking code: {tracker}')
 
 @clear_await
 def modify_menu():
