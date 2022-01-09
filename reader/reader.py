@@ -1,6 +1,4 @@
-# import municipios.municipios as mn
 import json
-
 import csv
 
 def read_dataframe(file_path, delimiter=';'):
@@ -13,12 +11,12 @@ def read_dataframe(file_path, delimiter=';'):
         print(f'Error: {e.message}')
     else:
         return data
-    
+
 def format_to_json(dataframe):
     header = dataframe[0]
     municipios = {}
-    municipios["municipios"] = [dict(zip(header, row)) for row in dataframe[1:]]  
-    
+    municipios["municipios"] = [dict(zip(header, row)) for row in dataframe[1:]]
+
     return municipios
 
 df = read_dataframe('/Users/kaos/workspace/CICE/municipios/municipios_madrid.csv')

@@ -53,7 +53,8 @@ def show_forecast(city, forecast, limit=3):
         print(f'Minimun Temperature: {day["min_temp"]:3.3} ºC')
         print(f'Temperature:         {day["the_temp"]:3.3} ºC')
         print(f'Humidity:            {day["humidity"]} %Hr')
-        print(f'Wind:                {day["wind_direction_compass"]} {day["wind_speed"]:3.3} mph')
+        print(
+            f'Wind:                {day["wind_direction_compass"]} {day["wind_speed"]:3.3} mph')
         print(f'Predictability:      {day["predictability"]} %')
         input()
 
@@ -83,6 +84,7 @@ def from_to_distance(source, destination):
     destination = parse_latt_long(destination)
     return distance_to(source, destination)
 
+
 def get_destination_info():
     dest_city = {}
     try:
@@ -109,18 +111,20 @@ def get_destination_info():
 
     if not dest_city:
         dest_city = {
-                'title': dest_loc['title'],
-                'distance': from_to_distance(from_city, dest_loc)
-            }
+            'title': dest_loc['title'],
+            'distance': from_to_distance(from_city, dest_loc)
+        }
 
     dest_city['from'] = source['title']
     dest_city['forecast'] = get_forecast(woeid, date=date)
-    dest_city['is_bad_weather'] = dest_city['forecast'][0]['weather_state_abbr'] in ('sn', 'sl', 'h', 't', 'hr')
+    dest_city['is_bad_weather'] = dest_city['forecast'][0]['weather_state_abbr'] in (
+        'sn', 'sl', 'h', 't', 'hr')
     dest_city['is_windy'] = dest_city['forecast'][0]['wind_speed'] > 10
     dest_city['speed'] = 90 if dest_city['is_windy'] else 100
     dest_city['duration'] = dest_city['distance'] / dest_city['speed']
 
     return dest_city, candidates
+
 
 while True:
     main_screen()
@@ -169,13 +173,17 @@ while True:
         dest_city, locations = get_destination_info()
 
         if dest_city:
-            print(f'\n## Trip from {dest_city["from"]} to {dest_city["title"]} ##')
+            print(
+                f'\n## Trip from {dest_city["from"]} to {dest_city["title"]} ##')
             if dest_city['is_windy']:
-                print(f'Warning weather state in {dest_city["title"]}: *** {dest_city["forecast"][0]["weather_state_name"].upper()} ***')
+                print(
+                    f'Warning weather state in {dest_city["title"]}: *** {dest_city["forecast"][0]["weather_state_name"].upper()} ***')
 
             show_forecast(dest_city['title'], dest_city['forecast'], limit=1)
-            print(f'Distance:           {round(dest_city["distance"])} Kilometers')
-            print(f'{round(dest_city["forecast"][0]["wind_speed"], 2)} knots wind speed')
+            print(
+                f'Distance:           {round(dest_city["distance"])} Kilometers')
+            print(
+                f'{round(dest_city["forecast"][0]["wind_speed"], 2)} knots wind speed')
             print(f'Stimated trip speed {dest_city["speed"]} kmh')
             print(f'Trip duration:      {round(dest_city["duration"])} h')
             input()
