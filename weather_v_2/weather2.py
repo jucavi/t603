@@ -48,6 +48,7 @@ def show_forecast(city, forecast, limit=3):
     for day in forecast[:limit]:
         print(f'For date:            {day["applicable_date"]}')
         print('---------------------')
+        print(f'Weather state        {day["weather_state_name"]}')
         print(f'Maximun Temperature: {day["max_temp"]:3.3} ºC')
         print(f'Minimun Temperature: {day["min_temp"]:3.3} ºC')
         print(f'Temperature:         {day["the_temp"]:3.3} ºC')
