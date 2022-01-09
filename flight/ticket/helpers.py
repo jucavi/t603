@@ -3,7 +3,6 @@ import platform
 import json
 from datetime import datetime, timedelta
 from functools import wraps
-from typing import overload
 
 def clear():
     if platform.system() == 'Windows':
@@ -41,6 +40,7 @@ def update_json_data(data, filename, path=''):
         json.dump(data, f, indent=4, ensure_ascii=False)
 
 def clear_await(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         clear()
         result = func(*args, **kwargs)
@@ -50,14 +50,17 @@ def clear_await(func):
 
 def ticket(filename, path=''):
     def decorator(klass):
+        @wraps(klass)
         def flight_wrapper(*args, **kwargs):
             flight = klass(*args, **kwargs)
+            dtime = datetime.utcnow()
             tickets = load_json_data(filename, path)
 
             tracker, ticket = flight.dict_ticket()
             counter = flight_wrapper.counter.get(tracker, 0)
             flight_wrapper.counter[tracker] = counter + 1
             tracker = f'{tracker}{flight_wrapper.counter[tracker]:04d}'
+            ticket.update({'timestamp': dtime.strftime('%H:%M UTC')})
             tickets.update({tracker: ticket})
 
             write_json_data(tickets, filename, overwrite=True)
