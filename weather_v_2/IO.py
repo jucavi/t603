@@ -1,5 +1,5 @@
 import json
-from os import path, sep
+from os import path
 
 filename = 'woeids.json'
 dirpath = path.dirname(__file__)
