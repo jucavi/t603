@@ -17,7 +17,7 @@ def from_to_menu(locs, airports):
 def list_tickets_menu(update=True):
     tickets = manager.ticket_list()
     tickets_ids = tuple(tickets.keys())
-    index = numeric_menu_with_return(tickets.keys())
+    index = numeric_menu_with_return(tickets.keys(), prompt='Seleccione el ticket: ')
     try:
         return tickets_ids[index], index
     except:
@@ -62,11 +62,21 @@ def remove_menu():
     else:
         print('Not tickets found!')
 
+@clear_await
+def view_menu():
+    ticket_id, index = list_tickets_menu()
+    if index != None:
+        tickets = manager.ticket_list()
+        for key, value in tickets[ticket_id].items():
+            print(f'{key:9}: {value}')
+    else:
+        print('Not tickets found!')
+
 
 main_menu_gen = (
-    (1, 2, 3, 'Q'),
-    ('Buy a ticket', 'Modify ticket', 'Remove ticket', 'Quit'),
-    (buy_menu, modify_menu, remove_menu, exit)
+    (1, 2, 3, 4, 'Q'),
+    ('Buy a ticket', 'Modify ticket', 'Remove ticket', 'View ticket', 'Quit'),
+    (buy_menu, modify_menu, remove_menu, view_menu, exit)
 )
 
 main_menu = make_menu(*main_menu_gen)

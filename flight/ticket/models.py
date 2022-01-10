@@ -87,8 +87,8 @@ class Flight:
         tracker = f'{self.origin.loc}{self.destiny.loc}{self.flight_time.strftime("%Y%m%d%H%M")}'
         ticket = {
                 'From': self.origin.name,
-                'To:': self.destiny.name,
-                'At:': self.flight_time.strftime('%Y-%m-%d %H:%M'),
+                'To': self.destiny.name,
+                'At': self.flight_time.strftime('%Y-%m-%d %H:%M'),
                 'ETA': self.ETA.strftime('%Y-%m-%d %H:%M')
                 }
         return tracker, ticket

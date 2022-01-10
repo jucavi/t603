@@ -60,7 +60,7 @@ def ticket(filename, path=''):
             counter = flight_wrapper.counter.get(tracker, 0)
             flight_wrapper.counter[tracker] = counter + 1
             tracker = f'{tracker}{flight_wrapper.counter[tracker]:04d}'
-            ticket.update({'timestamp': dtime.strftime('%H:%M UTC')})
+            ticket.update({'timestamp': dtime.strftime('%H:%M UTC'), 'id': tracker})
             tickets.update({tracker: ticket})
 
             write_json_data(tickets, filename, overwrite=True)
