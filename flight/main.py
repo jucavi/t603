@@ -10,7 +10,6 @@ LEG = {
     "BRA": "Brazil"
 }
 
-
 def menu():
     print('[1] Comprar Vuelo')
     print('[1] Modificar Vuelo')
