@@ -3,66 +3,67 @@ import os
 import datetime
 import csv
 
-DB = [{
-    "id": "cf_1",
-    "title": "El hombre bicentenario",
-    "author": "Isaac Asimov",
-    "genre": "Ciencia ficción"
-},
-{
-    "id": "ne_1",
-    "title": "Lobo de mar",
-    "author": "Jack London",
-    "genre": "Narrativa extranjera"
-},
-{
-    "id": "np_1",
-    "title": "El legado de los huesos",
-    "author": "Dolores Redondo",
-    "genre": "Narrativa policíaca"
-},
-{
-    "id": "dc_1",
-    "title": "El error de Descartes",
-    "author": "Antonio Damasio",
-    "genre": "Divulgación científica"
-},
-{
-    "id": "dc_2",
-    "title": "El ingenio de los pájaros",
-    "author": "Jennifer Ackerman",
-    "genre": "Divulgación científica"
-},
-{
-    "id": "ne_1",
-    "title": "El corazón de las tinieblas",
-    "author": "Joseph Conrad",
-    "genre": "Narrativa extranjera"
-},
-{
-    "id": "dc_5",
-    "title": "Metro 2033",
-    "author": "Dmitri Glujovski",
-    "genre": "Divulgación científica"
-},
-{
-    "id": "dc_5",
-    "title": "Sidharta",
-    "author": "Hermann Hesse",
-    "genre": "Narrativa extranjera"
-},
-{
-    "id": "el_1",
-    "title": "Andres Trapiello",
-    "author": "Las armas y las letras",
-    "genre": "Narrativa extranjera"
-},
-{
-    "id": "aa_1",
-    "title": "El poder del ahora",
-    "author": "Ekhart Tolle",
-    "genre": "Narrativa extranjera"
-},
+DB = [
+    {
+        "id": "cf_1",
+        "title": "El hombre bicentenario",
+        "author": "Isaac Asimov",
+        "genre": "Ciencia ficción"
+    },
+    {
+        "id": "ne_1",
+        "title": "Lobo de mar",
+        "author": "Jack London",
+        "genre": "Narrativa extranjera"
+    },
+    {
+        "id": "np_1",
+        "title": "El legado de los huesos",
+        "author": "Dolores Redondo",
+        "genre": "Narrativa policíaca"
+    },
+    {
+        "id": "dc_1",
+        "title": "El error de Descartes",
+        "author": "Antonio Damasio",
+        "genre": "Divulgación científica"
+    },
+    {
+        "id": "dc_2",
+        "title": "El ingenio de los pájaros",
+        "author": "Jennifer Ackerman",
+        "genre": "Divulgación científica"
+    },
+    {
+        "id": "ne_1",
+        "title": "El corazón de las tinieblas",
+        "author": "Joseph Conrad",
+        "genre": "Narrativa extranjera"
+    },
+    {
+        "id": "dc_5",
+        "title": "Metro 2033",
+        "author": "Dmitri Glujovski",
+        "genre": "Divulgación científica"
+    },
+    {
+        "id": "dc_5",
+        "title": "Sidharta",
+        "author": "Hermann Hesse",
+        "genre": "Narrativa extranjera"
+    },
+    {
+        "id": "el_1",
+        "title": "Andres Trapiello",
+        "author": "Las armas y las letras",
+        "genre": "Narrativa extranjera"
+    },
+    {
+        "id": "aa_1",
+        "title": "El poder del ahora",
+        "author": "Ekhart Tolle",
+        "genre": "Narrativa extranjera"
+    },
 ]
 
 CWD = os.path.dirname(__file__)
@@ -74,8 +75,10 @@ SCREEN_WIDTH = 120
 FILL_CHAR = '-'
 LINES_PER_PAGE = 5
 BOOK_KEYS = ['id', 'title', 'author', 'genre']
-genres = ["Narrativa extranjera", "Divulgación científica", "Narativa policíaca", "Ciencia ficción", "Autoayuda"]
+genres = ["Narrativa extranjera", "Divulgación científica",
+          "Narativa policíaca", "Ciencia ficción", "Autoayuda"]
 patrones_de_busqueda = {f'{i}': f'{k}' for i, k in enumerate(BOOK_KEYS, 1)}
+
 
 def print_wrap(text, width=SCREEN_WIDTH, fill=' '):
     for line in text.split('\n'):
@@ -104,7 +107,7 @@ def id_generator(db, genre):
     books_by_genre = find_by_user_value(db, 'id', id_partial)
     try:
         max_id = max(int(book['id'][3:]) for book in books_by_genre)
-    except :
+    except:
         max_id = 0
 
     return id_partial + str(max_id + 1)
@@ -119,7 +122,7 @@ def is_valid_id(db, book, id_candidate):
 
 def find_by_user_value(db, key, user_value):
     try:
-        return [book for book in db if (book.get(key) == user_value) or (user_value.lower() in book.get(key).lower()) ]
+        return [book for book in db if (book.get(key) == user_value) or (user_value.lower() in book.get(key).lower())]
     except:
         return []
 
@@ -193,13 +196,15 @@ def remove(db, book):
 def update(db, book):
     write_to_log('', book, 'Editando -->')
 
-    print_wrap('Si desea modificar entre el <NUEVO> valor sino pulse <INTRO>\n', fill=FILL_CHAR)
+    print_wrap(
+        'Si desea modificar entre el <NUEVO> valor sino pulse <INTRO>\n', fill=FILL_CHAR)
     for key, value in book.items():
         if key != 'id':
-            new_value = prompt(str_prompt=f'{key}: {value} >> '.rjust(SCREEN_WIDTH // 3))
+            new_value = prompt(
+                str_prompt=f'{key}: {value} >> '.rjust(SCREEN_WIDTH // 3))
 
             if new_value:
-                #quedaria mejor si fuese en ingles
+                # quedaria mejor si fuese en ingles
                 message = f'¿Desea modificar el {key.capitalize()} {value.title()} por {new_value.title()} (Y/n)?'
                 prompt_message = PROMPT.rjust(SCREEN_WIDTH // 3)
 
@@ -210,8 +215,10 @@ def update(db, book):
     if genre and (genre not in genres):
         genres.append(genre)
 
-    print_wrap('Si la ID no es correcta será generada automaticamente', fill=FILL_CHAR)
-    new_id = prompt(str_prompt=f'id: {book["id"]} >> '.rjust(SCREEN_WIDTH // 3))
+    print_wrap(
+        'Si la ID no es correcta será generada automaticamente', fill=FILL_CHAR)
+    new_id = prompt(
+        str_prompt=f'id: {book["id"]} >> '.rjust(SCREEN_WIDTH // 3))
     new_id = user_value_format(new_id, 'id')
 
     if is_valid_id(db, book, new_id):
@@ -224,11 +231,13 @@ def update(db, book):
 
 def show_books(books):
     print_wrap('Listado de Libros', fill=FILL_CHAR)
-    BOOKS_HEADER = '''\n{:4}  {:4}\t{:40} {:35} {:25}\n\n'''.format('', *(key.upper() for key in BOOK_KEYS))
+    BOOKS_HEADER = '''\n{:4}  {:4}\t{:40} {:35} {:25}\n\n'''.format(
+        '', *(key.upper() for key in BOOK_KEYS))
     print_wrap(BOOKS_HEADER)
     pag = 1
     for i, book in enumerate(books, 1):
-        print_wrap(f'''{i:4}. {book['id']}\t{book['title']:40} {book['author']:35} {book['genre']:25}\n''')
+        print_wrap(
+            f'''{i:4}. {book['id']}\t{book['title']:40} {book['author']:35} {book['genre']:25}\n''')
         # Algun tipo de paginación
         if i % LINES_PER_PAGE == 0:
             print_wrap(f'({pag})', fill=FILL_CHAR)
@@ -241,6 +250,7 @@ def show_books(books):
         prompt(str_prompt=': ')
 
 # TODO create_by() genre or author
+
 
 def create(db):
     print_wrap('Nuevo Libro\n\n', fill=FILL_CHAR)
@@ -285,7 +295,8 @@ def create_update_delete_menu(db, books):
                 elif action == 'e':
                     update(db, books[book_id])
                 else:
-                    print_wrap('La acción no existe o aun no se ha implementado' )
+                    print_wrap(
+                        'La acción no existe o aun no se ha implementado')
         else:
             print('Formato de comando erroneo')
 
@@ -307,10 +318,12 @@ def write_to_log(search_term, books, msg):
         if type(books) == list:
             for book in books:
                 if isinstance(book, dict) and book:
-                    file.write(log_entry.format(timestamp, book["id"], book["title"], book["author"], book["genre"]))
+                    file.write(log_entry.format(
+                        timestamp, book["id"], book["title"], book["author"], book["genre"]))
         else:
-            book = books # only one book
-            file.write(log_entry.format(timestamp, book["id"], book["title"], book["author"], book["genre"]))
+            book = books  # only one book
+            file.write(log_entry.format(
+                timestamp, book["id"], book["title"], book["author"], book["genre"]))
 
 
 def export_pickle(db, file):
@@ -331,9 +344,11 @@ def export_csv(db, file):
             csv_writer.writerow(header)
             for book in db:
                 # csv_writer.writerow(book.values())
-                csv_writer.writerow([book['id'], book['title'], book['author'], book['genre']])
+                csv_writer.writerow(
+                    [book['id'], book['title'], book['author'], book['genre']])
         except:
             print('Imposible guardar en la database')
+
 
 def main(db):
     while True:
@@ -360,14 +375,14 @@ def main(db):
         elif user_input == 'c':
             create(db)
         else:
-            print('Por favor introduzca una opción válida, pulse cualquier tecla para contiuar')
+            print(
+                'Por favor introduzca una opción válida, pulse cualquier tecla para contiuar')
 
 
 try:
-    with open(PICKLE_FILE , 'rb') as db_file:
+    with open(PICKLE_FILE, 'rb') as db_file:
         db = pickle.load(db_file)
 except Exception:
     main(DB)
 else:
     main(db)
-
