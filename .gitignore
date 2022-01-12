@@ -5,6 +5,7 @@
 *.csv
 *.json
 *.log
+flags/
 
 __pycache__
 .venv
