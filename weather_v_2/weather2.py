@@ -45,18 +45,20 @@ def get_forecast(woeid, date=None, strict=True):
 def show_forecast(city, forecast, limit=3):
     if forecast:
         print(f'\n{city} Forecast\n')
-    for day in forecast[:limit]:
-        print(f'For date:            {day["applicable_date"]}')
-        print('---------------------')
-        print(f'Weather state        {day["weather_state_name"]}')
-        print(f'Maximun Temperature: {day["max_temp"]:3.3} ºC')
-        print(f'Minimun Temperature: {day["min_temp"]:3.3} ºC')
-        print(f'Temperature:         {day["the_temp"]:3.3} ºC')
-        print(f'Humidity:            {day["humidity"]} %Hr')
-        print(
-            f'Wind:                {day["wind_direction_compass"]} {day["wind_speed"]:3.3} mph')
-        print(f'Predictability:      {day["predictability"]} %')
-        input()
+        for day in forecast[:limit]:
+            print(f'For date:            {day["applicable_date"]}')
+            print('---------------------')
+            print(f'Weather State        {day["weather_state_name"]}')
+            print(f'Maximun Temperature: {day["max_temp"]:3.3} ºC')
+            print(f'Minimun Temperature: {day["min_temp"]:3.3} ºC')
+            print(f'Temperature:         {day["the_temp"]:3.3} ºC')
+            print(f'Humidity:            {day["humidity"]} %Hr')
+            print(
+                f'Wind:                {day["wind_direction_compass"]} {day["wind_speed"]:3.3} mph')
+            print(f'Predictability:      {day["predictability"]} %')
+            input()
+    else:
+        print('No data to available!')
 
 
 def user_request():
@@ -75,7 +77,6 @@ def user_request():
 
 def parse_latt_long(city):
     latt, long = city['latt_long'].split(',')
-
     return float(latt), float(long)
 
 
@@ -142,14 +143,14 @@ while True:
             locations = get_locations(query)
             if locations:
                 query, woeid = locations[0]['title'], locations[0]['woeid']
-            else:
-                print('No data Found.')
-                continue
-
-        show_forecast(query, get_forecast(woeid))
+        if woeid:
+            show_forecast(query, get_forecast(woeid))
+        else:
+            print('No data Found.')
 
     elif user == '2':
-        query = user_input('Lattitude and longitude ')
+        # lattitude: (-90..90), longitude: (-180..180)
+        query = user_input('Lattitude and longitude: ')
         locations = get_locations(query, True)
         if locations:
             city, woeid = locations[0]['title'], locations[0]['woeid']
